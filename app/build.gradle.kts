@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.project.rekatrack"
-    compileSdk = 34
+    compileSdk = 35
 
     buildFeatures {
         viewBinding = true
@@ -50,6 +50,10 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
     implementation(libs.material)
+    implementation(libs.sdp.android)
+    implementation(libs.ssp.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.camera.view)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

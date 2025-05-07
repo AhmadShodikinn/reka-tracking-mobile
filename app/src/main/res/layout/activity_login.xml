@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    android:background="@color/white">
+
+    <!-- Background 1: kiri atas -->
+    <ImageView
+        android:id="@+id/background1"
+        android:layout_width="@dimen/_70sdp"
+        android:layout_height="@dimen/_120sdp"
+        android:layout_marginTop="@dimen/_70sdp"
+        android:contentDescription="Background 1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/random_bg_1" />
+
+    <ImageView
+        android:id="@+id/background2"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_80sdp"
+        android:contentDescription="Background 2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/random_bg_2" />
+
+
+    <!-- Background 2: kanan bawah -->
+    <ImageView
+        android:id="@+id/background3"
+        android:layout_width="@dimen/_120sdp"
+        android:layout_height="@dimen/_80sdp"
+        android:contentDescription="Background 3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/random_bg_3" />
+
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="@dimen/_42sdp"
+        android:layout_height="@dimen/_42sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:contentDescription="anu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_rekaindo" />
+
+    <TextView
+        android:id="@+id/titleapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:fontFamily="@font/roboto_medium"
+        android:text="@string/app_title"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/subtitleapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:fontFamily="@font/roboto_bold"
+        android:text="@string/app_subtitle"
+        android:textColor="@color/primary"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleapp" />
+
+    <!-- Ilustrasi bg_characters -->
+    <ImageView
+        android:id="@+id/bg_characters"
+        android:layout_width="@dimen/_256sdp"
+        android:layout_height="@dimen/_256sdp"
+        android:layout_marginTop="@dimen/_120sdp"
+        android:contentDescription="anu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_characters" />
+
+    <!-- FORM LOGIN -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/emailInputLayout"
+        android:layout_width="@dimen/_260sdp"
+        android:layout_height="@dimen/_46sdp"
+        android:hint="anu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bg_characters">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiEmail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="text"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/passwordInputLayout"
+        android:layout_width="@dimen/_260sdp"
+        android:layout_height="@dimen/_46sdp"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:hint="anu"
+        app:endIconMode="password_toggle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/emailInputLayout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiPassword"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/filledButton"
+        android:layout_width="@dimen/_260sdp"
+        android:layout_height="@dimen/_46sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:backgroundTint="@color/primary"
+        android:text="MASUK"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passwordInputLayout" />
+
+    <TextView
+        android:id="@+id/forgotpasswordlink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:text="Lupa Password"
+        android:textColor="@color/warning"
+        app:layout_constraintEnd_toEndOf="@+id/passwordInputLayout"
+        app:layout_constraintTop_toBottomOf="@+id/filledButton" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

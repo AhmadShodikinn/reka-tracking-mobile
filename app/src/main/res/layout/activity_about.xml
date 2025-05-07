@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <!-- Background kiri bawah -->
+    <ImageView
+        android:id="@+id/background2"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_80sdp"
+        android:contentDescription="Background 2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/random_bg_2" />
+
+    <!-- Background kanan bawah -->
+    <ImageView
+        android:id="@+id/background3"
+        android:layout_width="@dimen/_120sdp"
+        android:layout_height="@dimen/_80sdp"
+        android:contentDescription="Background 3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/random_bg_3" />
+
+    <!-- Logo/Icon -->
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="@dimen/_42sdp"
+        android:layout_height="@dimen/_42sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:contentDescription="Rekaindo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_rekaindo" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/titleapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:fontFamily="@font/roboto_medium"
+        android:text="@string/app_title"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:id="@+id/subtitleapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:fontFamily="@font/roboto_bold"
+        android:text="@string/app_subtitle"
+        android:textColor="@color/primary"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleapp" />
+
+    <!-- Teks tentang aplikasi -->
+    <TextView
+        android:id="@+id/tentangAplikasi"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:text="Aplikasi ini dirancang untuk memudahkan pengguna dalam melakukan pelacakan lokasi secara real-time. Dilengkapi dengan fitur yang intuitif dan desain antarmuka yang bersih, aplikasi ini ideal untuk kebutuhan logistik, pengiriman barang, hingga keperluan pribadi. Privasi dan keamanan data juga menjadi prioritas utama dalam pengembangan aplikasi ini."
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/subtitleapp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

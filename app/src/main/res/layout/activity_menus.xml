@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <!-- Background kiri bawah -->
+    <ImageView
+        android:id="@+id/background2"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_80sdp"
+        android:contentDescription="Background 2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/random_bg_2" />
+
+    <!-- Background kanan bawah -->
+    <ImageView
+        android:id="@+id/background3"
+        android:layout_width="@dimen/_120sdp"
+        android:layout_height="@dimen/_80sdp"
+        android:contentDescription="Background 3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/random_bg_3" />
+
+    <!-- Logo/Icon -->
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="@dimen/_42sdp"
+        android:layout_height="@dimen/_42sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:contentDescription="Rekaindo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_rekaindo" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/titleapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:fontFamily="@font/roboto_medium"
+        android:text="@string/app_title"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:id="@+id/subtitleapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:fontFamily="@font/roboto_bold"
+        android:text="@string/app_subtitle"
+        android:textColor="@color/primary"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/titleapp" />
+
+    <!-- Menu Button Container -->
+    <LinearLayout
+        android:id="@+id/menuContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_32sdp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/_16sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn1"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="@dimen/_230sdp"
+            android:layout_height="@dimen/_50sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:elevation="@dimen/_6sdp"
+            android:padding="@dimen/_8sdp"
+            android:text="Mulai Tracking"
+            app:backgroundTint="@color/primary"
+            android:textColor="@color/white"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_16ssp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn2"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="@dimen/_230sdp"
+            android:layout_height="@dimen/_50sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:padding="@dimen/_8sdp"
+            android:text="Tentang"
+            android:textAllCaps="false"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/_16sdp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn3"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="@dimen/_230sdp"
+            android:layout_height="@dimen/_50sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:padding="@dimen/_8sdp"
+            android:text="Keluar"
+            android:textAllCaps="false"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/_16sdp" />
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
