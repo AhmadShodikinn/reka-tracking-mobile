@@ -27,6 +27,10 @@ class LoginViewModel(
 
                 if (response.isSuccessful) {
                     _userLoginResult.value = response.body()
+
+                    response.body()?.accessToken?.let {
+                        tokenHandler.saveToken(it)
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

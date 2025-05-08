@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".MainActivity">
+    tools:context=".ui.TrackingActivity">
 
     <ImageView
         android:id="@+id/background2"
@@ -77,10 +77,10 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/black"
+        android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/guidelineTopContent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/tvLabelSuratJalan"
@@ -90,23 +90,65 @@
         android:textStyle="bold"
         android:textSize="16sp"
         android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="16dp"
-        android:layout_marginStart="24dp" />
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupSuratJalan"
+    <ScrollView
+        android:id="@+id/scrollSuratJalan"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:layout_marginTop="4dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
+        android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/tvLabelSuratJalan"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:singleLine="false"
-        app:chipSpacing="8dp" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupSuratJalan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacing="8dp"
+            app:singleLine="false" />
+    </ScrollView>
+
+
+    <TextView
+        android:id="@+id/tvLabelAlamatPengiriman"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alamat Pengiriman:"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/scrollSuratJalan"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollAlamatPengiriman"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelAlamatPengiriman"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupAlamatPengiriman"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:chipSpacing="8dp"
+            app:singleLine="false" />
+    </ScrollView>
 
     <TextView
         android:id="@+id/tvLabelStatus"
@@ -116,10 +158,10 @@
         android:textStyle="bold"
         android:textSize="16sp"
         android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/chipGroupSuratJalan"
-        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="12dp"
-        android:layout_marginStart="24dp" />
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/scrollAlamatPengiriman"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tvStatus"
@@ -128,19 +170,18 @@
         android:text="Pending"
         android:textSize="16sp"
         android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvLabelStatus"
-        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="4dp"
-        android:layout_marginStart="24dp" />
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelStatus"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <LinearLayout
         android:id="@+id/buttonContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="40dp"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvStatus">

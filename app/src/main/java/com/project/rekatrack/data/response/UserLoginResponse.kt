@@ -11,7 +11,7 @@ data class UserLoginResponse(
 	val expiresAt: String? = null,
 
 	@field:SerializedName("data")
-	val data: Data? = null,
+	val data: DataLogin? = null,
 
 	@field:SerializedName("message")
 	val message: String? = null,
@@ -29,7 +29,7 @@ data class Division(
 	val id: Int? = null
 )
 
-data class Data(
+data class DataLogin(
 
 	@field:SerializedName("role")
 	val role: Role? = null,

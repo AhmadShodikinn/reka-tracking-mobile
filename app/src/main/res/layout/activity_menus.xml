@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:padding="0dp"
     android:background="@color/white"
-    tools:context=".MainActivity">
+    tools:context=".ui.MenusActivity">
 
     <!-- Background kiri bawah -->
     <ImageView
@@ -81,7 +81,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn1"
+            android:id="@+id/btn_tracking"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="@dimen/_230sdp"
             android:layout_height="@dimen/_50sdp"
@@ -95,7 +95,7 @@
             android:textSize="@dimen/_16ssp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn2"
+            android:id="@+id/btn_about"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="@dimen/_230sdp"
             android:layout_height="@dimen/_50sdp"
@@ -107,7 +107,7 @@
             android:textSize="@dimen/_16sdp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn3"
+            android:id="@+id/btn_exit"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="@dimen/_230sdp"
             android:layout_height="@dimen/_50sdp"
