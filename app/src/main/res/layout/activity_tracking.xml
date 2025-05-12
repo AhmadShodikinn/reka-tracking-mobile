@@ -111,7 +111,7 @@
             android:id="@+id/chipGroupSuratJalan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:chipSpacing="8dp"
+            app:chipSpacing="2dp"
             app:singleLine="false" />
     </ScrollView>
 
@@ -146,7 +146,7 @@
             android:id="@+id/chipGroupAlamatPengiriman"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:chipSpacing="8dp"
+            app:chipSpacing="2dp"
             app:singleLine="false" />
     </ScrollView>
 
@@ -197,7 +197,7 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp"
-            app:backgroundTint="@color/primary"
+            app:backgroundTint="@drawable/button_state"
             app:cornerRadius="12dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -219,9 +219,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
-            android:text="Hentikan Tracker"
+            android:text="Selesaikan Pengiriman"
             android:textAllCaps="false"
-            android:textColor="@color/primary"
+            android:textColor="@color/warning"
             android:textSize="16sp"
             app:cornerRadius="12dp" />
     </LinearLayout>

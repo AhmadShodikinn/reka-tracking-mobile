@@ -1,15 +1,23 @@
 package com.project.rekatrack.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.chip.Chip
 import com.project.rekatrack.R
 import com.project.rekatrack.data.repository.Repository
@@ -24,6 +32,9 @@ class TrackingActivity: AppCompatActivity() {
     private lateinit var binding: ActivityTrackingBinding
     private lateinit var generalViewModel: GeneralViewModel
     private lateinit var scanLauncher: ActivityResultLauncher<Intent>
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var tokenHandler: TokenHandler
+    private var isTracking = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +43,8 @@ class TrackingActivity: AppCompatActivity() {
         binding = ActivityTrackingBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
 //            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -61,7 +74,48 @@ class TrackingActivity: AppCompatActivity() {
             val intent = Intent(this, CameraActivity::class.java)
             scanLauncher.launch(intent)
         }
+
+        binding.btnStartTracker.setOnClickListener {
+            isTracking = !isTracking
+            if (isTracking) {
+                binding.btnStartTracker.text = "Matikan Tracker"
+                binding.btnAddSuratJalan.isEnabled = false // Disable tombol
+                getLocation()
+            } else {
+                binding.btnStartTracker.text = "Hidupkan Tracker"
+//                binding.btnAddSuratJalan.isEnabled = true // Enable tombol kembali
+                // TODO: Tambahkan logika untuk mematikan tracker
+                updateStatus()
+            }
+        }
     }
+
+    private fun updateStatus() {
+        val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
+            ?.mapNotNull { it.id } ?: emptyList()
+
+        if (travelDocumentIds.isEmpty()) {
+            Toast.makeText(this, "Tidak ada dokumen untuk diperbarui", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        generalViewModel.updateStateTracking(travelDocumentIds)
+
+        generalViewModel.updateStateTracking.observe(this) { results ->
+            results?.let {
+                if (it.isNotEmpty()) {
+                    val latestStatus = it.last().status
+                    updateStatusTextView(latestStatus)
+                    Toast.makeText(this, "Status berhasil diperbarui: $latestStatus", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Status kosong", Toast.LENGTH_SHORT).show()
+                }
+            } ?: run {
+                Toast.makeText(this, "Gagal memperbarui status", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
     private fun fetchSuratJalan(scannedData: String) {
         generalViewModel.getTravelDocument(scannedData)
@@ -103,7 +157,61 @@ class TrackingActivity: AppCompatActivity() {
         return Chip(this).apply {
             this.text = text
             isCloseIconVisible = true
-            setOnCloseIconClickListener { onClose(this) }
+            setOnCloseIconClickListener {
+                if (!isTracking) {
+                    onClose(this)
+                } else {
+                    Toast.makeText(context, "Penghapusan tidak diizinkan saat tracking dimulai", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
+
+    private fun getLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener(this) { location ->
+                if (location != null) {
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+
+                    Log.d("TrackingActivity", "Latitude: $latitude, Longitude: $longitude")
+                    Toast.makeText(this, "Lokasi ditemukan: Latitude: $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
+
+                    val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
+                        ?.mapNotNull { it.id } ?: emptyList()
+
+//                    val driverId = tokenHandler.getDriverId()
+
+                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude, 3)
+                    generalViewModel.locationStatusList.observe(this) {status ->
+                        status?.let {
+                            if (it.isNotEmpty()) {
+                                val latestStatus = it.last().status
+                                updateStatusTextView(latestStatus)
+                            }
+                        }
+                    }
+                } else {
+                    Log.d("TrackingActivity", "Lokasi tidak ditemukan")
+                    Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private fun updateStatusTextView(status: String?) {
+        binding.tvStatus.text = status
+    }
+
+
 }

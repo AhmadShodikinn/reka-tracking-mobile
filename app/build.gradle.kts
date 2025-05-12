@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.play.services.mlkit.barcode.scanning)
     implementation(libs.androidx.camera.mlkit.vision)
     implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

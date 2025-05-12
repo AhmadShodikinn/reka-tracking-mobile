@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.rekatrack.data.repository.Repository
+import com.project.rekatrack.data.response.LocationStatus
+import com.project.rekatrack.data.response.ResultsItem
 import com.project.rekatrack.data.response.SearchSJNResponse
 import com.project.rekatrack.data.response.TravelDocumentInfo
 import kotlinx.coroutines.launch
@@ -22,6 +24,12 @@ class GeneralViewModel(
     private val _travelDocumentInfoList = MutableLiveData<List<TravelDocumentInfo>>()
     val travelDocumentInfoList: LiveData<List<TravelDocumentInfo>> = _travelDocumentInfoList
 
+    private val _locationStatusList = MutableLiveData<List<LocationStatus>?>()
+    val locationStatusList: LiveData<List<LocationStatus>?> = _locationStatusList
+
+    private val _updateStateTracking = MutableLiveData<List<ResultsItem>?>()
+    val updateStateTracking: LiveData<List<ResultsItem>?> = _updateStateTracking
+
     fun getTravelDocument(id: String) {
         viewModelScope.launch {
             try {
@@ -33,6 +41,7 @@ class GeneralViewModel(
 
                    searchResponse?.data?.let { dataPengiriman ->
                         val travelDocumentInfo = TravelDocumentInfo(
+                            id = dataPengiriman.id,
                             noTravelDocument = dataPengiriman.noTravelDocument,
                             sendTo = dataPengiriman.sendTo
                         )
@@ -63,5 +72,53 @@ class GeneralViewModel(
         val updatedList = currentList.filterNot { it.noTravelDocument == noTravelDocument }
         _travelDocumentInfoList.value = updatedList
     }
+
+    fun sendCurrentLocation(
+        travelDocumentIds: List<Int>,
+        latitude: Double,
+        longitude: Double,
+        driverId: Int
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.sendCurrentLocation(
+                    travelDocumentIds, latitude, longitude, driverId
+                )
+
+                if (response.isSuccessful) {
+                    response.body()?.let { sendResponse ->
+                        _locationStatusList.value = sendResponse.data
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun updateStateTracking(travelDocumentIds: List<Int>){
+        viewModelScope.launch {
+            try {
+                val response = repository.updateStateTracking(travelDocumentIds)
+
+                if (response.isSuccessful) {
+                    response.body().let { updateResponse ->
+                        _updateStateTracking.value = updateResponse?.results
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
 }

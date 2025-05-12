@@ -31,6 +31,10 @@ class LoginViewModel(
                     response.body()?.accessToken?.let {
                         tokenHandler.saveToken(it)
                     }
+
+//                    response.body()?.data?.id?.let {
+//                        tokenHandler.saveDriverId(it)
+//                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

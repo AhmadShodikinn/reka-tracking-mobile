@@ -10,5 +10,7 @@
     <color name="blue">#186B7D</color>
     <color name="neon">#86FF26</color>
 
+    <color name="disabled_grey">#D3D3D3</color>
+
     <color name="qr_code_reader_square">#FFFFFFFF</color>
 </resources>
