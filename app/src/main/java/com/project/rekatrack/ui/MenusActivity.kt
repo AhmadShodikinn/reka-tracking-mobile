@@ -29,6 +29,17 @@ class MenusActivity : AppCompatActivity() {
 
         Log.d(TAG, "onCreate called")
 
+        tokenHandler = TokenHandler(this)
+
+        val userName = tokenHandler.getUserName()
+        val userRole = tokenHandler.getUserRole()
+
+        binding.tvUserName.text = "Halo, $userName"
+        binding.tvUserRole.text = userRole
+
+        Log.d(TAG, "User: $userName, Role: $userRole")
+
+
         cameraPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->

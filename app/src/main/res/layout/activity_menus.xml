@@ -8,6 +8,20 @@
     android:background="@color/white"
     tools:context=".ui.MenusActivity">
 
+
+
+    <!-- Background karakter dengan opacity -->
+    <ImageView
+        android:id="@+id/bg_characters"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:alpha="0.05"
+        android:scaleType="fitCenter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/bg_characters" />
+
     <!-- Background kiri bawah -->
     <ImageView
         android:id="@+id/background2"
@@ -66,19 +80,51 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/titleapp" />
 
+    <!-- User Info -->
+    <LinearLayout
+        android:id="@+id/userInfoLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subtitleapp">
+
+        <TextView
+            android:id="@+id/tv_userName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nama Pengguna"
+            android:textSize="@dimen/_14ssp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/roboto_medium"/>
+
+        <TextView
+            android:id="@+id/tv_userRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jabatan"
+            android:textSize="@dimen/_12ssp"
+            android:textColor="@color/black"
+            android:fontFamily="@font/roboto"/>
+    </LinearLayout>
+
+
     <!-- Menu Button Container -->
     <LinearLayout
         android:id="@+id/menuContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_32sdp"
+        android:layout_marginTop="@dimen/_64sdp"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="@dimen/_16sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/subtitleapp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_tracking"
@@ -89,10 +135,10 @@
             android:elevation="@dimen/_6sdp"
             android:padding="@dimen/_8sdp"
             android:text="Mulai Tracking"
-            app:backgroundTint="@color/primary"
-            android:textColor="@color/white"
             android:textAllCaps="false"
-            android:textSize="@dimen/_16ssp" />
+            android:textColor="@color/white"
+            android:textSize="@dimen/_16ssp"
+            app:backgroundTint="@color/primary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_about"
@@ -103,6 +149,7 @@
             android:padding="@dimen/_8sdp"
             android:text="Tentang"
             android:textAllCaps="false"
+            app:backgroundTint="@color/white"
             android:textColor="@color/primary"
             android:textSize="@dimen/_16sdp" />
 
@@ -118,6 +165,5 @@
             android:textColor="@color/primary"
             android:textSize="@dimen/_16sdp" />
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -35,6 +35,7 @@ class TrackingActivity: AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var tokenHandler: TokenHandler
     private var isTracking = false
+    private var driverId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +55,7 @@ class TrackingActivity: AppCompatActivity() {
 
         val tokenHandler = TokenHandler(this)
         val token = tokenHandler.getToken() ?: ""
+        driverId = tokenHandler.getDriverId()
 
         val repository = Repository(ApiConfig.getApiService(token))
         val factory = ViewModelFactory(repository, this)
@@ -219,9 +221,7 @@ class TrackingActivity: AppCompatActivity() {
                     val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
                         ?.mapNotNull { it.id } ?: emptyList()
 
-//                    val driverId = tokenHandler.getDriverId()
-
-                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude, 3)
+                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude, driverId)
                     generalViewModel.locationStatusList.observe(this) {status ->
                         status?.let {
                             if (it.isNotEmpty()) {
