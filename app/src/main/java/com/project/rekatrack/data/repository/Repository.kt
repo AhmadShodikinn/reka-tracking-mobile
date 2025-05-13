@@ -35,10 +35,14 @@ class Repository(private val apiService: ApiService) {
     }
 
     suspend fun updateStateTracking(
-        travelDocumentIds: List<Int>
+        travelDocumentIds: List<Int>,
+        latitude: Double,
+        longitude: Double,
     ): Response<UpdateStateTrackingResponse> {
         val request = UpdateStateTrackingRequest(
-            travel_document_id = travelDocumentIds
+            travel_document_id = travelDocumentIds,
+            latitude = latitude,
+            longitude = longitude,
         )
         return apiService.updateStateTracking(request)
     }

@@ -100,10 +100,16 @@ class GeneralViewModel(
         }
     }
 
-    fun updateStateTracking(travelDocumentIds: List<Int>){
+    fun updateStateTracking(
+        travelDocumentIds: List<Int>,
+        latitude: Double,
+        longitude: Double,
+    ){
         viewModelScope.launch {
             try {
-                val response = repository.updateStateTracking(travelDocumentIds)
+                val response = repository.updateStateTracking(
+                    travelDocumentIds, latitude, longitude
+                )
 
                 if (response.isSuccessful) {
                     response.body().let { updateResponse ->
