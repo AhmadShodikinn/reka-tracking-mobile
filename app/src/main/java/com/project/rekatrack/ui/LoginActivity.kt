@@ -37,6 +37,13 @@ class LoginActivity: AppCompatActivity() {
         val tokenHandler = TokenHandler(this)
         val token = tokenHandler.getToken() ?: ""
 
+//        if (!token.isNullOrEmpty()) {
+//            val intent = Intent(this, MenusActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//            return
+//        }
+
         val repository = Repository(ApiConfig.getApiService(token))
         val factory = LoginViewModelFactory(repository, tokenHandler, this)
         loginViewModel = ViewModelProvider(this, factory).get(LoginViewModel::class.java)

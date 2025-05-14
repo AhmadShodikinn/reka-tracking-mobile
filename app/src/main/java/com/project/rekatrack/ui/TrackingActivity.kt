@@ -26,16 +26,23 @@ import com.project.rekatrack.data.viewModel.GeneralViewModel
 import com.project.rekatrack.databinding.ActivityTrackingBinding
 import com.project.rekatrack.network.ApiConfig
 import com.project.rekatrack.support.TokenHandler
+import com.project.rekatrack.support.TrackingService
 import com.project.rekatrack.viewModelFactory.ViewModelFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class TrackingActivity: AppCompatActivity() {
     private lateinit var binding: ActivityTrackingBinding
     private lateinit var generalViewModel: GeneralViewModel
     private lateinit var scanLauncher: ActivityResultLauncher<Intent>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var tokenHandler: TokenHandler
     private var isTracking = false
     private var driverId = -1
+    private var trackingJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,19 +89,62 @@ class TrackingActivity: AppCompatActivity() {
             if (isTracking) {
                 binding.btnStartTracker.text = "Matikan Tracker"
                 binding.btnAddSuratJalan.isEnabled = false // Disable tombol
-                getLocation()
+//                getLocation()
+                startLocationUpdates()
             } else {
                 binding.btnStartTracker.text = "Hidupkan Tracker"
 //                binding.btnAddSuratJalan.isEnabled = true // Enable tombol kembali
                 updateStatus()
             }
+
+            //uji foreground
+//            isTracking = !isTracking
+//            if (isTracking) {
+//                binding.btnStartTracker.text = "Matikan Tracker"
+//                binding.btnAddSuratJalan.isEnabled = false
+//                startTrackingService()
+//            } else {
+//                binding.btnStartTracker.text = "Hidupkan Tracker"
+//                stopTrackingService()
+//            }
         }
 
         binding.btnStopTracker.setOnClickListener {
             binding.btnAddSuratJalan.isEnabled = false
             binding.btnStartTracker.isEnabled = false
+            stopLocationUpdates()
             updateStatus()
+
+            //uji foreground
+//            binding.btnAddSuratJalan.isEnabled = false
+//            binding.btnStartTracker.isEnabled = false
+//            stopTrackingService()
         }
+    }
+
+    //uji foreground activity cuy
+    private fun startTrackingService() {
+        val serviceIntent = Intent(this, TrackingService::class.java)
+        startService(serviceIntent)
+    }
+
+    private fun stopTrackingService() {
+        val serviceIntent = Intent(this, TrackingService::class.java)
+        stopService(serviceIntent)
+    }
+
+    private fun startLocationUpdates() {
+        trackingJob = CoroutineScope(Dispatchers.Main).launch {
+            while (isActive && isTracking) {
+                getLocation()
+//                delay(5 * 60 * 1000) // 5 menit
+                delay(5 * 1000) // 5 menit
+            }
+        }
+    }
+
+    private fun stopLocationUpdates() {
+        trackingJob?.cancel()
     }
 
     private fun updateStatus() {

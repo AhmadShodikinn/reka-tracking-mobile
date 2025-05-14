@@ -34,9 +34,6 @@ class MenusActivity : AppCompatActivity() {
         val userName = tokenHandler.getUserName()
         val userRole = tokenHandler.getUserRole()
 
-        binding.tvUserName.text = "Halo, $userName"
-        binding.tvUserRole.text = userRole
-
         Log.d(TAG, "User: $userName, Role: $userRole")
 
 
@@ -75,6 +72,11 @@ class MenusActivity : AppCompatActivity() {
         tokenHandler = TokenHandler(this)
         Log.d(TAG, "Token: ${tokenHandler.getToken()}")
 
+
+        binding.tvUserName.text = "Halo, $userName"
+        binding.tvUserRole.text = userRole
+
+
         binding.btnAbout.setOnClickListener {
             Log.d(TAG, "btnAbout diklik")
             val intent = Intent(this, AboutActivity::class.java)
@@ -82,16 +84,6 @@ class MenusActivity : AppCompatActivity() {
         }
 
         binding.btnTracking.setOnClickListener {
-//            Log.d(TAG, "btnTracking diklik")
-//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-//                == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                Log.d(TAG, "Permission kamera SUDAH diberikan, buka CameraActivity")
-////                launchCameraActivity()
-//            } else {
-//                Log.d(TAG, "Permission kamera BELUM diberikan, request launcher")
-//                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-//            }
             val intent = Intent(this, TrackingActivity::class.java)
             startActivity(intent)
         }
