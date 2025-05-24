@@ -66,18 +66,62 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/titleapp" />
 
-    <!-- Teks tentang aplikasi -->
+    <!-- Ilustrasi Aplikasi -->
     <TextView
         android:id="@+id/tentangAplikasi"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        android:text="Aplikasi ini dirancang untuk memudahkan pengguna dalam melakukan pelacakan lokasi secara real-time. Dilengkapi dengan fitur yang intuitif dan desain antarmuka yang bersih, aplikasi ini ideal untuk kebutuhan logistik, pengiriman barang, hingga keperluan pribadi. Privasi dan keamanan data juga menjadi prioritas utama dalam pengembangan aplikasi ini."
-        android:textAlignment="center"
+        android:justificationMode="inter_word"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/about"
+        android:textAlignment="viewStart"
         android:textColor="@android:color/black"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/subtitleapp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/headerTentangAplikasi" />
+
+    <TextView
+        android:id="@+id/headerTentangAplikasi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tentang Aplikasi"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/illustration" />
+
+    <!-- Teks tentang aplikasi -->
+    <ImageView
+        android:id="@+id/illustration"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="20dp"
+        android:contentDescription="Ilustrasi Aplikasi"
+        android:src="@drawable/logo_fix_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/subtitleapp" />
+
+    <TextView
+        android:id="@+id/appVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Versi 1.0.0"
+        android:textSize="14sp"
+        android:textColor="#888888"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@+id/tentangAplikasi"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

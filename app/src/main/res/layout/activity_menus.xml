@@ -8,8 +8,6 @@
     android:background="@color/white"
     tools:context=".ui.MenusActivity">
 
-
-
     <!-- Background karakter dengan opacity -->
     <ImageView
         android:id="@+id/bg_characters"

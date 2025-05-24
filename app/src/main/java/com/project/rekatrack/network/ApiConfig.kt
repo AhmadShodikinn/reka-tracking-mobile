@@ -1,6 +1,5 @@
 package com.project.rekatrack.network
 
-import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -10,7 +9,7 @@ import java.util.concurrent.TimeUnit
 class ApiConfig {
     companion object{
 
-        private const val BASE_URL = "http://192.168.18.5:8000//api/"
+        private const val BASE_URL = "http://192.168.18.5:8001/api/"
 
         fun getApiService(token: String): ApiService {
             val logging = HttpLoggingInterceptor().apply {
