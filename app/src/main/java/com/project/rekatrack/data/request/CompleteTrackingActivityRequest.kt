@@ -1,6 +1,6 @@
 package com.project.rekatrack.data.request
 
-data class SendLocationRequest(
+data class CompleteTrackingActivityRequest(
     val travel_document_id: List<Int>,
     val latitude: Double,
     val longitude: Double

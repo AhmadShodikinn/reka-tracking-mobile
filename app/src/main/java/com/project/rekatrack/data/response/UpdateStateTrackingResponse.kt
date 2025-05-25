@@ -8,10 +8,10 @@ data class UpdateStateTrackingResponse(
 	val message: String? = null,
 
 	@field:SerializedName("results")
-	val results: List<ResultsItem>? = null
+	val results: List<ResultsItemUpdateStatus>? = null
 )
 
-data class ResultsItem(
+data class ResultsItemUpdateStatus(
 
 	@field:SerializedName("travel_document_id")
 	val travelDocumentId: Int? = null,

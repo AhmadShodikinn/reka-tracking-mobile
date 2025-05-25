@@ -10,7 +10,6 @@ class TokenHandler(context: Context) {
 
     companion object {
         private const val TOKEN_KEY = "token_key"
-        private const val DRIVER_ID = "driver_id"
     }
 
     fun saveToken(token: String){
@@ -19,14 +18,6 @@ class TokenHandler(context: Context) {
 
     fun getToken(): String? {
         return sharedPreferences.getString(TOKEN_KEY, null)
-    }
-
-    fun saveDriverId(driverId: Int){
-        sharedPreferences.edit().putInt(DRIVER_ID, driverId).apply()
-    }
-
-    fun getDriverId(): Int {
-        return sharedPreferences.getInt(DRIVER_ID, -1)
     }
 
     fun setUserInfo(name: String, role: String) {

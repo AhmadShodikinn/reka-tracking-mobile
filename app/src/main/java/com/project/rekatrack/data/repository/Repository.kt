@@ -1,12 +1,15 @@
 package com.project.rekatrack.data.repository
 
+import com.project.rekatrack.data.request.CompleteTrackingActivityRequest
 import com.project.rekatrack.data.request.SendLocationRequest
 import com.project.rekatrack.data.request.UpdateStateTrackingRequest
 import com.project.rekatrack.data.request.UserLoginRequest
+import com.project.rekatrack.data.response.CompleteTrackingActivityResponse
 import com.project.rekatrack.data.response.SearchSJNResponse
 import com.project.rekatrack.data.response.SendLocationResponse
 import com.project.rekatrack.data.response.UpdateStateTrackingResponse
 import com.project.rekatrack.data.response.UserLoginResponse
+import com.project.rekatrack.data.response.UserLogoutResponse
 import com.project.rekatrack.network.ApiService
 import retrofit2.Response
 
@@ -15,6 +18,11 @@ class Repository(private val apiService: ApiService) {
         val bodyRequest = UserLoginRequest(email, password)
         return apiService.authUsers(bodyRequest)
     }
+
+    suspend fun authLogout(): Response<UserLogoutResponse> {
+        return apiService.logoutUser()
+    }
+
     suspend fun getTravelDocument(id: String): Response<SearchSJNResponse> {
         return apiService.getTravelDocument(id)
     }
@@ -22,14 +30,12 @@ class Repository(private val apiService: ApiService) {
     suspend fun sendCurrentLocation(
         travelDocumentIds: List<Int>,
         latitude: Double,
-        longitude: Double,
-        driverId: Int
+        longitude: Double
     ): Response<SendLocationResponse> {
         val request = SendLocationRequest(
             travel_document_id = travelDocumentIds,
             latitude = latitude,
-            longitude = longitude,
-            driver_id = driverId
+            longitude = longitude
         )
         return apiService.sendCurrentLocation(request)
     }
@@ -45,5 +51,18 @@ class Repository(private val apiService: ApiService) {
             longitude = longitude,
         )
         return apiService.updateStateTracking(request)
+    }
+
+    suspend fun completeTrackingActivity(
+        travelDocumentIds: List<Int>,
+        latitude: Double,
+        longitude: Double,
+    ): Response<CompleteTrackingActivityResponse> {
+        val request = CompleteTrackingActivityRequest(
+            travel_document_id = travelDocumentIds,
+            latitude = latitude,
+            longitude = longitude,
+        )
+        return apiService.completeTrackingActivity(request)
     }
 }

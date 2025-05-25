@@ -32,10 +32,6 @@ class LoginViewModel(
                         tokenHandler.saveToken(it)
                     }
 
-                    response.body()?.data?.id?.let {
-                        tokenHandler.saveDriverId(it)
-                    }
-
                     response.body()?.data?.let { userData ->
                         val userName = userData.name
                         val userRole = userData.role?.name ?: "Tidak diketahui"

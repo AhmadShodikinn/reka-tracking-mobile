@@ -41,7 +41,6 @@ class TrackingActivity: AppCompatActivity() {
     private lateinit var scanLauncher: ActivityResultLauncher<Intent>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var isTracking = false
-    private var driverId = -1
     private var trackingJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +61,6 @@ class TrackingActivity: AppCompatActivity() {
 
         val tokenHandler = TokenHandler(this)
         val token = tokenHandler.getToken() ?: ""
-        driverId = tokenHandler.getDriverId()
 
         val repository = Repository(ApiConfig.getApiService(token))
         val factory = ViewModelFactory(repository, this)
@@ -271,15 +269,16 @@ class TrackingActivity: AppCompatActivity() {
                     val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
                         ?.mapNotNull { it.id } ?: emptyList()
 
-                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude, driverId)
-                    generalViewModel.locationStatusList.observe(this) {status ->
-                        status?.let {
-                            if (it.isNotEmpty()) {
-                                val latestStatus = it.last().status
-                                updateStatusTextView(latestStatus)
-                            }
-                        }
-                    }
+                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude)
+//                    benerin ini ya
+//                    generalViewModel.sendLocationResponse.observe(this) {status ->
+//                        status?.let {
+//                            if (it.isNotEmpty()) {
+//                                val latestStatus = it.last().status
+//                                updateStatusTextView(latestStatus)
+//                            }
+//                        }
+//                    }
                 } else {
                     Log.d("TrackingActivity", "Lokasi tidak ditemukan")
                     Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()

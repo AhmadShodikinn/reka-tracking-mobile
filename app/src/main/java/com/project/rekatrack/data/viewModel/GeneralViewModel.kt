@@ -7,10 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.rekatrack.data.repository.Repository
-import com.project.rekatrack.data.response.LocationStatus
-import com.project.rekatrack.data.response.ResultsItem
+import com.project.rekatrack.data.response.CompleteTrackingActivityResponse
 import com.project.rekatrack.data.response.SearchSJNResponse
+import com.project.rekatrack.data.response.SendLocationResponse
 import com.project.rekatrack.data.response.TravelDocumentInfo
+import com.project.rekatrack.data.response.UpdateStateTrackingResponse
+import com.project.rekatrack.data.response.UserLogoutResponse
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -24,11 +26,35 @@ class GeneralViewModel(
     private val _travelDocumentInfoList = MutableLiveData<List<TravelDocumentInfo>>()
     val travelDocumentInfoList: LiveData<List<TravelDocumentInfo>> = _travelDocumentInfoList
 
-    private val _locationStatusList = MutableLiveData<List<LocationStatus>?>()
-    val locationStatusList: LiveData<List<LocationStatus>?> = _locationStatusList
+    private val _sendLocationResult = MutableLiveData<SendLocationResponse>()
+    val sendLocationResponse: LiveData<SendLocationResponse> = _sendLocationResult
 
-    private val _updateStateTracking = MutableLiveData<List<ResultsItem>?>()
-    val updateStateTracking: LiveData<List<ResultsItem>?> = _updateStateTracking
+    private val _updateStateTracking = MutableLiveData<UpdateStateTrackingResponse>()
+    val updateStateResponse: LiveData<UpdateStateTrackingResponse> = _updateStateTracking
+
+    private val _completeTrackingActivity = MutableLiveData<CompleteTrackingActivityResponse>()
+    val completeTrackingResponse: LiveData<CompleteTrackingActivityResponse> = _completeTrackingActivity
+
+    private val _logoutSession = MutableLiveData<UserLogoutResponse>()
+    val logoutResponse: LiveData<UserLogoutResponse> = _logoutSession
+
+    fun authLogout() {
+        viewModelScope.launch {
+            try {
+                val response = repository.authLogout()
+
+                if (response.isSuccessful) {
+                    _logoutSession.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     fun getTravelDocument(id: String) {
         viewModelScope.launch {
@@ -76,19 +102,16 @@ class GeneralViewModel(
     fun sendCurrentLocation(
         travelDocumentIds: List<Int>,
         latitude: Double,
-        longitude: Double,
-        driverId: Int
+        longitude: Double
     ) {
         viewModelScope.launch {
             try {
                 val response = repository.sendCurrentLocation(
-                    travelDocumentIds, latitude, longitude, driverId
+                    travelDocumentIds, latitude, longitude
                 )
 
                 if (response.isSuccessful) {
-                    response.body()?.let { sendResponse ->
-                        _locationStatusList.value = sendResponse.data
-                    }
+                    _sendLocationResult.value = response.body()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")
@@ -112,9 +135,7 @@ class GeneralViewModel(
                 )
 
                 if (response.isSuccessful) {
-                    response.body().let { updateResponse ->
-                        _updateStateTracking.value = updateResponse?.results
-                    }
+                    _updateStateTracking.value = response.body()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")
@@ -125,6 +146,31 @@ class GeneralViewModel(
             }
         }
     }
+
+    fun completeTrackingActivity(
+        travelDocumentIds: List<Int>,
+        latitude: Double,
+        longitude: Double,
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.completeTrackingActivity(
+                    travelDocumentIds, latitude, longitude
+                )
+                if (response.isSuccessful) {
+                    _completeTrackingActivity.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
 
 
 }
