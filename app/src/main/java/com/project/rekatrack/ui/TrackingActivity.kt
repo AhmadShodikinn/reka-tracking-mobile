@@ -81,6 +81,16 @@ class TrackingActivity: AppCompatActivity() {
             }
         }
 
+        generalViewModel.isDocumentAlreadySent.observe(this) { isSent ->
+            if (isSent == true) {
+                AlertDialog.Builder(this)
+                    .setTitle("Surat Jalan Selesai")
+                    .setMessage("Surat jalan ini sudah diselesaikan, pengiriman lokasi tidak dapat dilakukan.")
+                    .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                    .show()
+            }
+        }
+
         updateButtonStates()
 
         binding.btnAddSuratJalan.setOnClickListener {
@@ -89,18 +99,6 @@ class TrackingActivity: AppCompatActivity() {
         }
 
         binding.btnStartTracker.isEnabled = hasDocument
-//        binding.btnStartTracker.setOnClickListener {
-//            isTracking = !isTracking
-//            if (isTracking) {
-//                binding.btnStartTracker.text = "Matikan Tracker"
-//                binding.btnAddSuratJalan.isEnabled = false
-//                startLocationUpdates()
-//            } else {
-//                binding.btnStartTracker.text = "Hidupkan Tracker"
-//                updateStatus()
-//            }
-//            updateButtonStates()
-//        }
 
         //uji logic
         binding.btnStartTracker.setOnClickListener {
@@ -155,7 +153,6 @@ class TrackingActivity: AppCompatActivity() {
                     binding.btnStartTracker.isEnabled = false
                     binding.btnStopTracker.isEnabled = false
                     completeTrackingActivity()
-                    updateButtonStates()
                 }
                 .setNegativeButton("Batal", null)
                 .show()
@@ -196,6 +193,11 @@ class TrackingActivity: AppCompatActivity() {
                                 val latestStatus = it.last()?.trackingStatus
                                 updateStatusTextView(latestStatus)
                                 Toast.makeText(this, "Status pengiriman: $latestStatus", Toast.LENGTH_SHORT).show()
+
+                                val intent = Intent(this, MenusActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                                startActivity(intent)
+                                finish()
                             } else {
                                 Toast.makeText(this, "Status kosong", Toast.LENGTH_SHORT).show()
                             }
@@ -295,14 +297,6 @@ class TrackingActivity: AppCompatActivity() {
             binding.chipGroupAlamatPengiriman.removeAllViews()
 
             travelDocumentInfoList?.forEach { info ->
-                if (info.status) {
-                    AlertDialog.Builder(this)
-                        .setTitle("Surat Jalan Selesai")
-                        .setMessage("Surat jalan ini sudah diselesaikan, pengiriman lokasi tidak dapat dilakukan.")
-                        .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-                        .show()
-                    return@observe
-                }
 
                 updateButtonStates()
 
@@ -331,8 +325,6 @@ class TrackingActivity: AppCompatActivity() {
                     binding.chipGroupSuratJalan.addView(suratJalanChip)
                     binding.chipGroupAlamatPengiriman.addView(alamatChip)
                 }
-//                hasDocument = !travelDocumentInfoList.isNotEmpty()
-//                binding.btnStartTracker.isEnabled = hasDocument
             }
         }
     }

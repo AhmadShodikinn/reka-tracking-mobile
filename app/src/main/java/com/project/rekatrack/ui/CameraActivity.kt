@@ -31,6 +31,11 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var cameraController: LifecycleCameraController
     private lateinit var flashLight: ImageView
     private var isFlashOn: Boolean = false
+    private var firstCall = true
+    private var scanFailedToastShown = false
+    private var scanFailHandler = android.os.Handler()
+    private var scanFailRunnable: Runnable? = null
+    private val SCAN_FAIL_DELAY = 60_000L // 1 menit dalam milidetik
 
     companion object {
         private const val TAG = "CameraActivity"
@@ -110,7 +115,6 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    private var firstCall = true
     private fun showResult(result: MlKitAnalyzer.Result?) {
         val overlay = binding.overlayQr
         val location = IntArray(2)
@@ -121,43 +125,82 @@ class CameraActivity : AppCompatActivity() {
         val overlayX = location[0]
         val overlayY = location[1]
 
+        val barcodeResults = result?.getValue(barcodeScanner)
+
         if (firstCall) {
-            val barcodeResults = result?.getValue(barcodeScanner)
-            if (
-                (barcodeResults != null) &&
-                (barcodeResults.isNotEmpty()) &&
-                (barcodeResults.first() != null)
-            ) {
-                for (barcode in barcodeResults) {
-                    if (isBarcodeInOverlay(barcode, overlayX, overlayY, overlayWidth, overlayHeight)) {
-                        firstCall = false
-
-                        val barcodeValue = barcode?.rawValue ?: "Tidak diketahui"
-
-                        // Tampilkan dialog sukses
-                        MaterialAlertDialogBuilder(this)
-                            .setTitle("Scan QR Sukses!")
-                            .setMessage("QR Value: $barcodeValue")
-                            .setPositiveButton("Tutup") { dialog, _ ->
-                                dialog.dismiss()
-                                navigateToTracker(barcodeValue)
-                            }
-                            .show()
-
-                        return
-                    }
+            if (barcodeResults.isNullOrEmpty()) {
+                // QR tidak ditemukan sama sekali → start timer kalau belum berjalan
+                if (scanFailRunnable == null) {
+                    startScanFailTimer()
                 }
+                return
+            }
 
-                // Jika tidak ada barcode dalam area overlay
+            // Jika ada barcode, coba cek satu-satu apakah ada yang dalam overlay
+            var barcodeInOverlayFound = false
+            for (barcode in barcodeResults) {
+                if (isBarcodeInOverlay(barcode, overlayX, overlayY, overlayWidth, overlayHeight)) {
+                    barcodeInOverlayFound = true
+                    firstCall = false
+
+                    val barcodeValue = barcode?.rawValue ?: "Tidak diketahui"
+
+                    // Batalkan timer gagal jika berjalan
+                    cancelScanFailTimer()
+
+                    // Tampilkan dialog sukses
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Scan QR Sukses!")
+                        .setMessage("QR Value: $barcodeValue")
+                        .setPositiveButton("Tutup") { dialog, _ ->
+                            dialog.dismiss()
+                            navigateToTracker(barcodeValue)
+                        }
+                        .show()
+
+                    break
+                }
+            }
+
+            if (!barcodeInOverlayFound) {
+                // QR ditemukan tapi tidak dalam area overlay → langsung tampilkan pesan gagal
+                if (!scanFailedToastShown) {
+                    scanFailedToastShown = true
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Scan Gagal")
+                        .setMessage("QR tidak terdeteksi dalam area yang ditentukan.")
+                        .setPositiveButton("Scan Lagi") { dialog, _ ->
+                            firstCall = true
+                            scanFailedToastShown = false
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun startScanFailTimer() {
+        scanFailRunnable = Runnable {
+            if (firstCall) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle("Scan Gagal")
-                    .setMessage("QR tidak terdeteksi dalam area yang ditentukan.")
-                    .setPositiveButton("Scan Lagi") { dialog, _ ->
+                    .setMessage("Tidak ada QR code yang terdeteksi dalam waktu 1 menit.")
+                    .setPositiveButton("Coba Lagi") { dialog, _ ->
                         firstCall = true
+                        scanFailedToastShown = false
                         dialog.dismiss()
                     }
                     .show()
             }
+        }
+        scanFailHandler.postDelayed(scanFailRunnable!!, SCAN_FAIL_DELAY)
+    }
+
+    private fun cancelScanFailTimer() {
+        scanFailRunnable?.let {
+            scanFailHandler.removeCallbacks(it)
+            scanFailRunnable = null
         }
     }
 

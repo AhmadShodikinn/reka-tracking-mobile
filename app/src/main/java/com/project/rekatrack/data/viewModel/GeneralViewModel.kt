@@ -29,23 +29,17 @@ class GeneralViewModel(
     private val _travelDocumentInfoList = MutableLiveData<List<TravelDocumentInfo>>()
     val travelDocumentInfoList: LiveData<List<TravelDocumentInfo>> = _travelDocumentInfoList
 
+    private val _isDocumentAlreadySent = MutableLiveData<Boolean>()
+    val isDocumentAlreadySent: LiveData<Boolean> get() = _isDocumentAlreadySent
+
     private val _sendLocationResult = MutableLiveData<List<DataItemSendLocation?>?>()
     val sendLocationResponse: LiveData<List<DataItemSendLocation?>?> = _sendLocationResult
-
-//    private val _sendLocationResult = MutableLiveData<SendLocationResponse>()
-//    val sendLocationResponse: LiveData<SendLocationResponse> = _sendLocationResult
 
     private val _updateStateTracking = MutableLiveData<List<ResultsItemUpdateStatus?>?>()
     val updateStateResponse: LiveData<List<ResultsItemUpdateStatus?>?> = _updateStateTracking
 
-//    private val _updateStateTracking = MutableLiveData<UpdateStateTrackingResponse>()
-//    val updateStateResponse: LiveData<UpdateStateTrackingResponse> = _updateStateTracking
-
     private val _completeTrackingActivity = MutableLiveData<List<DataItemCompleteTracking?>?>()
     val completeTrackingResponse: LiveData<List<DataItemCompleteTracking?>?> = _completeTrackingActivity
-
-//    private val _completeTrackingActivity = MutableLiveData<CompleteTrackingActivityResponse>()
-//    val completeTrackingResponse: LiveData<CompleteTrackingActivityResponse> = _completeTrackingActivity
 
     private val _logoutSession = MutableLiveData<UserLogoutResponse>()
     val logoutResponse: LiveData<UserLogoutResponse> = _logoutSession
@@ -87,6 +81,7 @@ class GeneralViewModel(
 
                        val isSent = (dataPengiriman.status == "Terkirim")
                        if (isSent) {
+                           _isDocumentAlreadySent.postValue(true)
                            return@launch
                        }
 
@@ -110,6 +105,8 @@ class GeneralViewModel(
             }
         }
     }
+
+
 
     fun removeTravelDocument(noTravelDocument: String) {
         val currentList = _travelDocumentInfoList.value?.toMutableList() ?: return
