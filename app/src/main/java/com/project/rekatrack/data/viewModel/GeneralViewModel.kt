@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.rekatrack.data.repository.Repository
 import com.project.rekatrack.data.response.CompleteTrackingActivityResponse
+import com.project.rekatrack.data.response.DataItemCompleteTracking
+import com.project.rekatrack.data.response.DataItemSendLocation
+import com.project.rekatrack.data.response.ResultsItemUpdateStatus
 import com.project.rekatrack.data.response.SearchSJNResponse
 import com.project.rekatrack.data.response.SendLocationResponse
 import com.project.rekatrack.data.response.TravelDocumentInfo
@@ -26,14 +29,23 @@ class GeneralViewModel(
     private val _travelDocumentInfoList = MutableLiveData<List<TravelDocumentInfo>>()
     val travelDocumentInfoList: LiveData<List<TravelDocumentInfo>> = _travelDocumentInfoList
 
-    private val _sendLocationResult = MutableLiveData<SendLocationResponse>()
-    val sendLocationResponse: LiveData<SendLocationResponse> = _sendLocationResult
+    private val _sendLocationResult = MutableLiveData<List<DataItemSendLocation?>?>()
+    val sendLocationResponse: LiveData<List<DataItemSendLocation?>?> = _sendLocationResult
 
-    private val _updateStateTracking = MutableLiveData<UpdateStateTrackingResponse>()
-    val updateStateResponse: LiveData<UpdateStateTrackingResponse> = _updateStateTracking
+//    private val _sendLocationResult = MutableLiveData<SendLocationResponse>()
+//    val sendLocationResponse: LiveData<SendLocationResponse> = _sendLocationResult
 
-    private val _completeTrackingActivity = MutableLiveData<CompleteTrackingActivityResponse>()
-    val completeTrackingResponse: LiveData<CompleteTrackingActivityResponse> = _completeTrackingActivity
+    private val _updateStateTracking = MutableLiveData<List<ResultsItemUpdateStatus?>?>()
+    val updateStateResponse: LiveData<List<ResultsItemUpdateStatus?>?> = _updateStateTracking
+
+//    private val _updateStateTracking = MutableLiveData<UpdateStateTrackingResponse>()
+//    val updateStateResponse: LiveData<UpdateStateTrackingResponse> = _updateStateTracking
+
+    private val _completeTrackingActivity = MutableLiveData<List<DataItemCompleteTracking?>?>()
+    val completeTrackingResponse: LiveData<List<DataItemCompleteTracking?>?> = _completeTrackingActivity
+
+//    private val _completeTrackingActivity = MutableLiveData<CompleteTrackingActivityResponse>()
+//    val completeTrackingResponse: LiveData<CompleteTrackingActivityResponse> = _completeTrackingActivity
 
     private val _logoutSession = MutableLiveData<UserLogoutResponse>()
     val logoutResponse: LiveData<UserLogoutResponse> = _logoutSession
@@ -69,8 +81,14 @@ class GeneralViewModel(
                         val travelDocumentInfo = TravelDocumentInfo(
                             id = dataPengiriman.id,
                             noTravelDocument = dataPengiriman.noTravelDocument,
-                            sendTo = dataPengiriman.sendTo
+                            sendTo = dataPengiriman.sendTo,
+                            status = (dataPengiriman.status == "Terkirim")
                         )
+
+                       val isSent = (dataPengiriman.status == "Terkirim")
+                       if (isSent) {
+                           return@launch
+                       }
 
                         val currentList = _travelDocumentInfoList.value?.toMutableList() ?: mutableListOf()
                         if (currentList.none { it.noTravelDocument == travelDocumentInfo.noTravelDocument }) {
@@ -111,7 +129,9 @@ class GeneralViewModel(
                 )
 
                 if (response.isSuccessful) {
-                    _sendLocationResult.value = response.body()
+                    response.body().let { sendLocationResponse ->
+                        _sendLocationResult.value = sendLocationResponse?.data
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")
@@ -135,7 +155,9 @@ class GeneralViewModel(
                 )
 
                 if (response.isSuccessful) {
-                    _updateStateTracking.value = response.body()
+                    response.body().let { updateStateTrackingResponse ->
+                        _updateStateTracking.value = updateStateTrackingResponse?.results
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")
@@ -158,7 +180,9 @@ class GeneralViewModel(
                     travelDocumentIds, latitude, longitude
                 )
                 if (response.isSuccessful) {
-                    _completeTrackingActivity.value = response.body()
+                    response.body().let { completeTrackingResponse ->
+                        _completeTrackingActivity.value = completeTrackingResponse?.data
+                    }
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val message = JSONObject(errorBody).getString("message")

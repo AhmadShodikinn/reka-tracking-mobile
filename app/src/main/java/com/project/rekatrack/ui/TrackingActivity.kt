@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
@@ -17,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.chip.Chip
 import com.project.rekatrack.R
@@ -108,10 +110,16 @@ class TrackingActivity: AppCompatActivity() {
         }
 
         binding.btnStopTracker.setOnClickListener {
-            binding.btnAddSuratJalan.isEnabled = false
-            binding.btnStartTracker.isEnabled = false
-            stopLocationUpdates()
-            updateStatus()
+            AlertDialog.Builder(this)
+                .setTitle("Konfirmasi Penyelesaian")
+                .setMessage("Apakah Anda yakin ingin menyelesaikan pengiriman? Setelah ini Anda tidak dapat menambahkan surat jalan atau mengaktifkan pelacak lagi.")
+                .setPositiveButton("Ya") { _, _ ->
+                    binding.btnAddSuratJalan.isEnabled = false
+                    binding.btnStartTracker.isEnabled = false
+                    completeTrackingActivity()
+                }
+                .setNegativeButton("Batal", null)
+                .show()
 
             //uji foreground
 //            binding.btnAddSuratJalan.isEnabled = false
@@ -119,6 +127,54 @@ class TrackingActivity: AppCompatActivity() {
 //            stopTrackingService()
         }
     }
+
+    private fun completeTrackingActivity() {
+        val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
+            ?.mapNotNull { it.id } ?: emptyList()
+
+        if (travelDocumentIds.isEmpty()) {
+            Toast.makeText(this, "Tidak ada dokumen untuk diselesaikan", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Toast.makeText(this, "Izin lokasi tidak tersedia", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener(this) { location ->
+                if (location != null) {
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+
+                    generalViewModel.completeTrackingActivity(travelDocumentIds, latitude, longitude)
+                    generalViewModel.completeTrackingResponse.observe(this) { result ->
+                        result?.let {
+                            if (it.isNotEmpty()) {
+                                val latestStatus = it.last()?.trackingStatus
+                                updateStatusTextView(latestStatus)
+                                Toast.makeText(this, "Status pengiriman: $latestStatus", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Status kosong", Toast.LENGTH_SHORT).show()
+                            }
+                        } ?: run {
+                            Toast.makeText(this, "Gagal memperbarui status", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
 
     //uji foreground activity cuy
     private fun startTrackingService() {
@@ -167,30 +223,30 @@ class TrackingActivity: AppCompatActivity() {
         }
 
         fusedLocationClient.lastLocation
-            .addOnSuccessListener(this) { location ->
-                if (location != null) {
-                    val latitude = location.latitude
-                    val longitude = location.longitude
+        .addOnSuccessListener(this) { location ->
+            if (location != null) {
+                val latitude = location.latitude
+                val longitude = location.longitude
 
-                    generalViewModel.updateStateTracking(travelDocumentIds, latitude, longitude)
+                generalViewModel.updateStateTracking(travelDocumentIds, latitude, longitude)
 
-                    generalViewModel.updateStateTracking.observe(this) { results ->
-                        results?.let {
-                            if (it.isNotEmpty()) {
-                                val latestStatus = it.last().status
-                                updateStatusTextView(latestStatus)
-                                Toast.makeText(this, "Status diperbarui: $latestStatus", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Toast.makeText(this, "Status kosong", Toast.LENGTH_SHORT).show()
-                            }
-                        } ?: run {
-                            Toast.makeText(this, "Gagal memperbarui status", Toast.LENGTH_SHORT).show()
+                generalViewModel.updateStateResponse.observe(this) { results ->
+                    results?.let {
+                        if (it.isNotEmpty()) {
+                            val latestStatus = it.last()?.status
+                            updateStatusTextView(latestStatus)
+                            Toast.makeText(this, "Status diperbarui: $latestStatus", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "Status kosong", Toast.LENGTH_SHORT).show()
                         }
+                    } ?: run {
+                        Toast.makeText(this, "Gagal memperbarui status", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
             }
+        }
     }
 
 
@@ -203,6 +259,15 @@ class TrackingActivity: AppCompatActivity() {
             binding.chipGroupAlamatPengiriman.removeAllViews()
 
             travelDocumentInfoList?.forEach { info ->
+                if (info.status) {
+                    AlertDialog.Builder(this)
+                        .setTitle("Surat Jalan Selesai")
+                        .setMessage("Surat jalan ini sudah diselesaikan, pengiriman lokasi tidak dapat dilakukan.")
+                        .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                        .show()
+                    return@observe
+                }
+
                 info.noTravelDocument?.let { noDoc ->
                     val alamat = info.sendTo ?: ""
 
@@ -257,33 +322,61 @@ class TrackingActivity: AppCompatActivity() {
             return
         }
 
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener(this) { location ->
-                if (location != null) {
-                    val latitude = location.latitude
-                    val longitude = location.longitude
-
-                    Log.d("TrackingActivity", "Latitude: $latitude, Longitude: $longitude")
-                    Toast.makeText(this, "Lokasi ditemukan: Latitude: $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
-
-                    val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
-                        ?.mapNotNull { it.id } ?: emptyList()
-
-                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude)
-//                    benerin ini ya
+//        fusedLocationClient.lastLocation
+//            .addOnSuccessListener(this) { location ->
+//                if (location != null) {
+//                    val latitude = location.latitude
+//                    val longitude = location.longitude
+//
+//                    Log.d("TrackingActivity", "Latitude: $latitude, Longitude: $longitude")
+//                    Toast.makeText(this, "Lokasi ditemukan: Latitude: $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
+//
+//                    val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
+//                        ?.mapNotNull { it.id } ?: emptyList()
+//
+//                    generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude)
 //                    generalViewModel.sendLocationResponse.observe(this) {status ->
 //                        status?.let {
 //                            if (it.isNotEmpty()) {
-//                                val latestStatus = it.last().status
+//                                val latestStatus = it.last()?.status
 //                                updateStatusTextView(latestStatus)
 //                            }
 //                        }
 //                    }
-                } else {
-                    Log.d("TrackingActivity", "Lokasi tidak ditemukan")
-                    Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+//                } else {
+//                    Log.d("TrackingActivity", "Lokasi tidak ditemukan")
+//                    Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+
+        fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            null
+        ).addOnSuccessListener { location ->
+            if (location != null) {
+                val latitude = location.latitude
+                val longitude = location.longitude
+
+                Log.d("TrackingActivity", "Latitude: $latitude, Longitude: $longitude")
+                Toast.makeText(this, "Lokasi ditemukan: Latitude: $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
+
+                val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
+                    ?.mapNotNull { it.id } ?: emptyList()
+
+                generalViewModel.sendCurrentLocation(travelDocumentIds, latitude, longitude)
+                generalViewModel.sendLocationResponse.observe(this) { status ->
+                    status?.let {
+                        if (it.isNotEmpty()) {
+                            val latestStatus = it.last()?.status
+                            updateStatusTextView(latestStatus)
+                        }
+                    }
                 }
+            } else {
+                Log.d("TrackingActivity", "Lokasi tidak ditemukan")
+                Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
             }
+        }
     }
 
     private fun updateStatusTextView(status: String?) {

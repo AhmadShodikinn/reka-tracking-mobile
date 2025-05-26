@@ -210,7 +210,7 @@
             android:text="Hidupkan Tracker"
             android:textAllCaps="false"
             app:backgroundTint="@drawable/outlined_button_state"
-            android:textColor="@color/primary"
+            android:textColor="@drawable/outlined_text_state"
             android:textSize="16sp"
             app:cornerRadius="12dp" />
 

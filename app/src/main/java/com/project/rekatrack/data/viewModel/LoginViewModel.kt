@@ -1,6 +1,7 @@
 package com.project.rekatrack.data.viewModel
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -46,6 +47,7 @@ class LoginViewModel(
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("LoginError", "Exception saat login", e)
                 Toast.makeText(context,"Server Error!", Toast.LENGTH_SHORT).show()
             }
         }
