@@ -1,10 +1,12 @@
 package com.project.rekatrack.data.repository
 
 import com.project.rekatrack.data.request.CompleteTrackingActivityRequest
+import com.project.rekatrack.data.request.ForgotPasswordRequest
 import com.project.rekatrack.data.request.SendLocationRequest
 import com.project.rekatrack.data.request.UpdateStateTrackingRequest
 import com.project.rekatrack.data.request.UserLoginRequest
 import com.project.rekatrack.data.response.CompleteTrackingActivityResponse
+import com.project.rekatrack.data.response.ForgotPasswordResponse
 import com.project.rekatrack.data.response.SearchSJNResponse
 import com.project.rekatrack.data.response.SendLocationResponse
 import com.project.rekatrack.data.response.UpdateStateTrackingResponse
@@ -21,6 +23,18 @@ class Repository(private val apiService: ApiService) {
 
     suspend fun authLogout(): Response<UserLogoutResponse> {
         return apiService.logoutUser()
+    }
+
+    suspend fun forgotPassword(
+        email: String,
+        password: String,
+        newPassword: String
+    ): Response<ForgotPasswordResponse> {
+        val request = ForgotPasswordRequest(
+            email = email,
+            password = password,
+            password_confirmation = newPassword)
+        return apiService.forgotPassword(request)
     }
 
     suspend fun getTravelDocument(id: String): Response<SearchSJNResponse> {

@@ -1,10 +1,12 @@
 package com.project.rekatrack.network
 
 import com.project.rekatrack.data.request.CompleteTrackingActivityRequest
+import com.project.rekatrack.data.request.ForgotPasswordRequest
 import com.project.rekatrack.data.request.SendLocationRequest
 import com.project.rekatrack.data.request.UpdateStateTrackingRequest
 import com.project.rekatrack.data.request.UserLoginRequest
 import com.project.rekatrack.data.response.CompleteTrackingActivityResponse
+import com.project.rekatrack.data.response.ForgotPasswordResponse
 import com.project.rekatrack.data.response.SearchSJNResponse
 import com.project.rekatrack.data.response.SendLocationResponse
 import com.project.rekatrack.data.response.UpdateStateTrackingResponse
@@ -34,4 +36,7 @@ interface ApiService {
 
     @POST("complete-tracking")
     suspend fun completeTrackingActivity(@Body completeTrackingActivity: CompleteTrackingActivityRequest): Response<CompleteTrackingActivityResponse>
+
+    @POST("forgot-password")
+    suspend fun forgotPassword(@Body forgotPasswordRequest: ForgotPasswordRequest): Response<ForgotPasswordResponse>
 }

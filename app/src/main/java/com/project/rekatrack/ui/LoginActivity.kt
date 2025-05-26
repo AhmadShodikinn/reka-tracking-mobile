@@ -59,8 +59,8 @@ class LoginActivity: AppCompatActivity() {
             }
         }
 
-        loginViewModel.userLoginResult.observe(this, {response ->
-            if (response != null ){
+        loginViewModel.userLoginResult.observe(this) { response ->
+            if (response != null) {
                 Toast.makeText(this, "Sukses!, Mengalihkan...", Toast.LENGTH_SHORT).show()
 
                 val intent = Intent(this, MenusActivity::class.java)
@@ -68,6 +68,6 @@ class LoginActivity: AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Gagal!...", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
 }

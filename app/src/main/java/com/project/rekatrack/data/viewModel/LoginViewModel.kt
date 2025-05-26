@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.project.rekatrack.data.repository.Repository
+import com.project.rekatrack.data.response.ForgotPasswordResponse
 import com.project.rekatrack.data.response.UserLoginResponse
 import com.project.rekatrack.support.TokenHandler
 import kotlinx.coroutines.launch
@@ -20,6 +21,9 @@ class LoginViewModel(
 ): ViewModel() {
     private val _userLoginResult = MutableLiveData<UserLoginResponse>()
     val userLoginResult: LiveData<UserLoginResponse> = _userLoginResult
+
+    private val _userForgotPasswordResult = MutableLiveData<ForgotPasswordResponse>()
+    val userForgotPasswordResponse: LiveData<ForgotPasswordResponse> = _userForgotPasswordResult
 
     fun loginUser(email: String, password: String) {
         viewModelScope.launch {
@@ -51,5 +55,25 @@ class LoginViewModel(
                 Toast.makeText(context,"Server Error!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    fun forgotPassword(email: String, password: String, newPassword: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.forgotPassword(email,password,newPassword)
+
+                if (response.isSuccessful) {
+                    _userForgotPasswordResult.value = response.body()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val message = JSONObject(errorBody).getString("message")
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            }catch (e: Exception) {
+                Log.e("LoginError", "Exception saat login", e)
+                Toast.makeText(context,"Server Error!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
 }
