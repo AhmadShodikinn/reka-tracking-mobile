@@ -223,7 +223,7 @@
             android:text="Selesaikan Pengiriman"
             app:backgroundTint="@drawable/outlined_button_state"
             android:textAllCaps="false"
-            android:textColor="@color/warning"
+            android:textColor="@drawable/outlined_text_warning_state"
             android:textSize="16sp"
             app:cornerRadius="12dp" />
     </LinearLayout>

@@ -43,8 +43,9 @@ class TrackingActivity: AppCompatActivity() {
     private lateinit var scanLauncher: ActivityResultLauncher<Intent>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var isTracking = false
+    private var hasTracking = false
     private var trackingJob: Job? = null
-    private var hasDocument = true //bug disini
+    private var hasDocument = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,24 +81,58 @@ class TrackingActivity: AppCompatActivity() {
             }
         }
 
+        updateButtonStates()
+
         binding.btnAddSuratJalan.setOnClickListener {
             val intent = Intent(this, CameraActivity::class.java)
             scanLauncher.launch(intent)
         }
 
         binding.btnStartTracker.isEnabled = hasDocument
+//        binding.btnStartTracker.setOnClickListener {
+//            isTracking = !isTracking
+//            if (isTracking) {
+//                binding.btnStartTracker.text = "Matikan Tracker"
+//                binding.btnAddSuratJalan.isEnabled = false
+//                startLocationUpdates()
+//            } else {
+//                binding.btnStartTracker.text = "Hidupkan Tracker"
+//                updateStatus()
+//            }
+//            updateButtonStates()
+//        }
+
+        //uji logic
         binding.btnStartTracker.setOnClickListener {
-            isTracking = !isTracking
-            if (isTracking) {
-                binding.btnStartTracker.text = "Matikan Tracker"
-                binding.btnAddSuratJalan.isEnabled = false // Disable tombol
-//                getLocation()
-                startLocationUpdates()
+            if (!hasTracking) {
+                // Tampilkan alert hanya saat pertama kali tracking dimulai
+                AlertDialog.Builder(this)
+                    .setTitle("Konfirmasi")
+                    .setMessage("Apakah data surat jalan sudah benar semua?\n\nSetelah pelacakan dimulai, Anda tidak dapat menambah atau menghapus surat jalan.")
+                    .setPositiveButton("Lanjutkan") { _, _ ->
+                        hasTracking = true
+                        isTracking = true
+                        binding.btnStartTracker.text = "Matikan Tracker"
+                        startLocationUpdates()
+                        updateButtonStates()
+                    }
+                    .setNegativeButton("Batal") { _, _ ->
+                    }
+                    .show()
             } else {
-                binding.btnStartTracker.text = "Hidupkan Tracker"
-//                binding.btnAddSuratJalan.isEnabled = true // Enable tombol kembali
-                updateStatus()
+                isTracking = !isTracking
+
+                if (isTracking) {
+                    binding.btnStartTracker.text = "Matikan Tracker"
+                    startLocationUpdates()
+                } else {
+                    binding.btnStartTracker.text = "Hidupkan Tracker"
+                    updateStatus()
+                }
+
+                updateButtonStates()
             }
+        }
 
             //uji foreground
 //            isTracking = !isTracking
@@ -109,7 +144,6 @@ class TrackingActivity: AppCompatActivity() {
 //                binding.btnStartTracker.text = "Hidupkan Tracker"
 //                stopTrackingService()
 //            }
-        }
 
         binding.btnStopTracker.isEnabled = hasDocument
         binding.btnStopTracker.setOnClickListener {
@@ -119,15 +153,12 @@ class TrackingActivity: AppCompatActivity() {
                 .setPositiveButton("Ya") { _, _ ->
                     binding.btnAddSuratJalan.isEnabled = false
                     binding.btnStartTracker.isEnabled = false
+                    binding.btnStopTracker.isEnabled = false
                     completeTrackingActivity()
+                    updateButtonStates()
                 }
                 .setNegativeButton("Batal", null)
                 .show()
-
-            //uji foreground
-//            binding.btnAddSuratJalan.isEnabled = false
-//            binding.btnStartTracker.isEnabled = false
-//            stopTrackingService()
         }
     }
 
@@ -263,8 +294,6 @@ class TrackingActivity: AppCompatActivity() {
             binding.chipGroupSuratJalan.removeAllViews()
             binding.chipGroupAlamatPengiriman.removeAllViews()
 
-            hasDocument = false
-
             travelDocumentInfoList?.forEach { info ->
                 if (info.status) {
                     AlertDialog.Builder(this)
@@ -275,7 +304,7 @@ class TrackingActivity: AppCompatActivity() {
                     return@observe
                 }
 
-
+                updateButtonStates()
 
                 info.noTravelDocument?.let { noDoc ->
                     val alamat = info.sendTo ?: ""
@@ -286,6 +315,7 @@ class TrackingActivity: AppCompatActivity() {
                             binding.chipGroupSuratJalan.removeViewAt(index)
                             binding.chipGroupAlamatPengiriman.removeViewAt(index)
                             generalViewModel.removeTravelDocument(noDoc)
+                            updateButtonStates()
                         }
                     }
 
@@ -312,10 +342,10 @@ class TrackingActivity: AppCompatActivity() {
             this.text = text
             isCloseIconVisible = true
             setOnCloseIconClickListener {
-                if (!isTracking) {
+                if (!hasTracking) {
                     onClose(this)
                 } else {
-                    Toast.makeText(context, "Penghapusan tidak diizinkan saat tracking dimulai", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Penghapusan tidak diizinkan setelah tracking dimulai", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -386,6 +416,25 @@ class TrackingActivity: AppCompatActivity() {
             } else {
                 Log.d("TrackingActivity", "Lokasi tidak ditemukan")
                 Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun updateButtonStates() {
+        val hasDocs = generalViewModel.travelDocumentInfoList.value?.isNotEmpty() == true
+
+        binding.btnStartTracker.isEnabled = hasDocs
+        binding.btnAddSuratJalan.isEnabled = !hasTracking
+        binding.btnStopTracker.isEnabled = hasDocs && hasTracking
+
+        if (hasTracking) {
+            for (i in 0 until binding.chipGroupSuratJalan.childCount) {
+                val chip = binding.chipGroupSuratJalan.getChildAt(i) as Chip
+                chip.isCloseIconVisible = false
+            }
+            for (i in 0 until binding.chipGroupAlamatPengiriman.childCount) {
+                val chip = binding.chipGroupAlamatPengiriman.getChildAt(i) as Chip
+                chip.isCloseIconVisible = false
             }
         }
     }
