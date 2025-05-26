@@ -13,11 +13,21 @@ class TokenHandler(context: Context) {
     }
 
     fun saveToken(token: String){
-        sharedPreferences.edit().putString(TOKEN_KEY, token).apply()
+        sharedPreferences
+            .edit()
+            .putString(TOKEN_KEY, token)
+            .apply()
     }
 
     fun getToken(): String? {
-        return sharedPreferences.getString(TOKEN_KEY, null)
+        return sharedPreferences
+            .getString(TOKEN_KEY, null)
+    }
+
+    fun removeToken() {
+        sharedPreferences.edit()
+            .remove(TOKEN_KEY)
+            .apply()
     }
 
     fun setUserInfo(name: String, role: String) {

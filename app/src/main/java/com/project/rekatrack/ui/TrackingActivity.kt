@@ -44,6 +44,7 @@ class TrackingActivity: AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var isTracking = false
     private var trackingJob: Job? = null
+    private var hasDocument = true //bug disini
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,6 +85,7 @@ class TrackingActivity: AppCompatActivity() {
             scanLauncher.launch(intent)
         }
 
+        binding.btnStartTracker.isEnabled = hasDocument
         binding.btnStartTracker.setOnClickListener {
             isTracking = !isTracking
             if (isTracking) {
@@ -109,6 +111,7 @@ class TrackingActivity: AppCompatActivity() {
 //            }
         }
 
+        binding.btnStopTracker.isEnabled = hasDocument
         binding.btnStopTracker.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Konfirmasi Penyelesaian")
@@ -222,8 +225,10 @@ class TrackingActivity: AppCompatActivity() {
             return
         }
 
-        fusedLocationClient.lastLocation
-        .addOnSuccessListener(this) { location ->
+        fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            null
+        ).addOnSuccessListener(this) { location ->
             if (location != null) {
                 val latitude = location.latitude
                 val longitude = location.longitude
@@ -258,6 +263,8 @@ class TrackingActivity: AppCompatActivity() {
             binding.chipGroupSuratJalan.removeAllViews()
             binding.chipGroupAlamatPengiriman.removeAllViews()
 
+            hasDocument = false
+
             travelDocumentInfoList?.forEach { info ->
                 if (info.status) {
                     AlertDialog.Builder(this)
@@ -267,6 +274,8 @@ class TrackingActivity: AppCompatActivity() {
                         .show()
                     return@observe
                 }
+
+
 
                 info.noTravelDocument?.let { noDoc ->
                     val alamat = info.sendTo ?: ""
@@ -292,6 +301,8 @@ class TrackingActivity: AppCompatActivity() {
                     binding.chipGroupSuratJalan.addView(suratJalanChip)
                     binding.chipGroupAlamatPengiriman.addView(alamatChip)
                 }
+//                hasDocument = !travelDocumentInfoList.isNotEmpty()
+//                binding.btnStartTracker.isEnabled = hasDocument
             }
         }
     }
