@@ -282,7 +282,7 @@ class TrackingActivity: AppCompatActivity() {
                     }
                 }
             } else {
-                Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Lokasi tidak ditemukan, pastikan gps anda menyala", Toast.LENGTH_LONG).show()
             }
         }
     }
