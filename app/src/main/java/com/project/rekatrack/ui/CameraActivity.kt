@@ -3,6 +3,8 @@ package com.project.rekatrack.ui
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.WindowInsets
 import android.view.WindowManager
@@ -143,41 +145,92 @@ class CameraActivity : AppCompatActivity() {
                     barcodeInOverlayFound = true
                     firstCall = false
 
-                    val barcodeValue = barcode?.rawValue ?: "Tidak diketahui"
+                    val barcodeValue = barcode?.rawValue
+                    var invalidQrToastShown = false
+                    Log.d("CameraActivity", barcodeValue!!)
+                    if (barcodeValue != null && barcodeValue.startsWith("SJNID:")) {
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle("SCAN DOKUMEN SUKSES!")
+                            .setPositiveButton("Lanjutkan") { dialog, which ->
+                                navigateToTracker(extractId(barcodeValue))
+                            }
+                            .setNegativeButton("Scan Ulang") { _,_ ->
+                                firstCall = true
+                            }
+                            .show()
+                    } else {
+                        if (!invalidQrToastShown) {
+                            invalidQrToastShown = true
 
-                    // Batalkan timer gagal jika berjalan
-                    cancelScanFailTimer()
+                            Toast.makeText(
+                                this,
+                                "Kode QR tidak valid. Silakan coba lagi.",
+                                Toast.LENGTH_SHORT
+                            ).show()
 
-                    // Tampilkan dialog sukses
-                    MaterialAlertDialogBuilder(this)
-                        .setTitle("Scan QR Sukses!")
-                        .setMessage("QR Value: $barcodeValue")
-                        .setPositiveButton("Tutup") { dialog, _ ->
-                            dialog.dismiss()
-                            navigateToTracker(barcodeValue)
+                            firstCall = true
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                invalidQrToastShown = false
+                            }, 5000)
                         }
-                        .show()
+                    }
 
-                    break
+//                    val barcodeValue = barcode?.rawValue ?: "Tidak diketahui"
+//
+//                    // Batalkan timer gagal jika berjalan
+//                    cancelScanFailTimer()
+//
+//                    // Tampilkan dialog sukses
+//                    MaterialAlertDialogBuilder(this)
+//                        .setTitle("Scan QR Sukses!")
+//                        .setMessage("QR Value: $barcodeValue")
+//                        .setPositiveButton("Tutup") { dialog, _ ->
+//                            dialog.dismiss()
+//                            navigateToTracker(barcodeValue)
+//                        }
+//                        .show()
+//
+//                    break
                 }
             }
 
+//            if (!barcodeInOverlayFound) {
+//                // QR ditemukan tapi tidak dalam area overlay → langsung tampilkan pesan gagal
+//                if (!scanFailedToastShown) {
+//                    scanFailedToastShown = true
+//                    MaterialAlertDialogBuilder(this)
+//                        .setTitle("Scan Gagal")
+//                        .setMessage("QR tidak terdeteksi dalam area yang ditentukan.")
+//                        .setPositiveButton("Scan Lagi") { dialog, _ ->
+//                            firstCall = true
+//                            scanFailedToastShown = false
+//                            dialog.dismiss()
+//                        }
+//                        .show()
+//                }
+//            }
+
             if (!barcodeInOverlayFound) {
-                // QR ditemukan tapi tidak dalam area overlay → langsung tampilkan pesan gagal
                 if (!scanFailedToastShown) {
                     scanFailedToastShown = true
-                    MaterialAlertDialogBuilder(this)
-                        .setTitle("Scan Gagal")
-                        .setMessage("QR tidak terdeteksi dalam area yang ditentukan.")
-                        .setPositiveButton("Scan Lagi") { dialog, _ ->
-                            firstCall = true
-                            scanFailedToastShown = false
-                            dialog.dismiss()
-                        }
-                        .show()
+                    Toast.makeText(
+                        this,
+                        "QR tidak terdeteksi dalam area yang ditentukan.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        scanFailedToastShown = false
+                    }, 5000)
                 }
             }
         }
+    }
+
+    private fun extractId(barcodeValue: String): String {
+        val match = Regex("SJNID:(\\d+)").find(barcodeValue)
+        return match?.value?.substringAfter("SJNID:") ?: ""
     }
 
     private fun startScanFailTimer() {
