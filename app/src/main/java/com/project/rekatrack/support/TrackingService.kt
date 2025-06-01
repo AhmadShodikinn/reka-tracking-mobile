@@ -1,6 +1,7 @@
 package com.project.rekatrack.support
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -15,6 +16,8 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.project.rekatrack.R
+import com.project.rekatrack.data.request.SendLocationRequest
+import com.project.rekatrack.network.ApiConfig
 import com.project.rekatrack.ui.TrackingActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +31,7 @@ class TrackingService : Service() {
     private var isTracking = true
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var trackingJob: Job? = null
+    private var documentIds: List<String> = emptyList()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -36,14 +40,52 @@ class TrackingService : Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        startForegroundService()
-        startLocationUpdates()
     }
 
-    private fun startForegroundService() {
-        val notificationIntent = Intent(this, TrackingActivity::class.java)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        isTracking = intent?.getBooleanExtra("isTracking", true) ?: true
+        documentIds = intent?.getStringArrayListExtra("travelDocumentIds") ?: emptyList()
+
+        createNotificationChannel() // pastikan dulu channel dibuat
+        val notification = buildNotification() // buat notifikasi
+        startForeground(1, notification) // MULAI foreground SEGERA
+
+        startLocationUpdates() // lalu proses lainnya
+        return START_STICKY
+    }
+
+    private fun buildNotification(): Notification {
+        val notificationIntent = Intent(this, TrackingActivity::class.java).apply {
+            putExtra("isTracking", isTracking)
+            putStringArrayListExtra("travelDocumentIds", ArrayList(documentIds))
+        }
+
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Tracking Aktif")
+            .setContentText("Lokasi sedang dikirim secara berkala")
+            .setSmallIcon(R.drawable.ic_logo_foreground)
+            .setContentIntent(pendingIntent)
+            .build()
+    }
+
+    private fun showNotifications() {
+        val notificationIntent = Intent(this, TrackingActivity::class.java).apply {
+            putExtra("isTracking", isTracking)
+            putStringArrayListExtra("travelDocumentIds", ArrayList(documentIds))
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -73,8 +115,39 @@ class TrackingService : Service() {
 
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             location?.let {
-                // Kirim ke server di sini
+                val latitude = it.latitude
+                val longitude = it.longitude
+
                 Log.d("TrackingService", "Lokasi: ${it.latitude}, ${it.longitude}")
+//                sendLocationToServer(documentIds, latitude, longitude)
+            }
+        }
+    }
+
+    private fun sendLocationToServer(ids: List<String>, latitude: Double, longitude: Double) {
+        val token = TokenHandler(this).getToken() ?: return
+        val apiService = ApiConfig.getApiService(token)
+
+        val intIds = ids.mapNotNull { it.toIntOrNull() }
+
+        val requestBody = SendLocationRequest(
+            travel_document_id = intIds,
+            latitude = latitude,
+            longitude = longitude
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService.sendCurrentLocation(
+                    sendLocationRequest = requestBody
+                )
+                if (response.isSuccessful) {
+                    Log.d("TrackingService", "Berhasil kirim lokasi: ${response.body()}")
+                } else {
+                    Log.e("TrackingService", "Gagal kirim lokasi: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("TrackingService", "Error kirim lokasi", e)
             }
         }
     }

@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -81,6 +82,70 @@ class TrackingActivity: AppCompatActivity() {
             }
         }
 
+        intent?.let {
+            isTracking = it.getBooleanExtra("isTracking", false)
+            val ids = it.getStringArrayListExtra("travelDocumentIds")
+            Log.d("TrackingActivity", "Intent isTracking: $isTracking, travelDocumentIds: $ids")
+            if (!ids.isNullOrEmpty()) {
+                hasTracking = true
+
+                ids.forEach { id ->
+                    Log.d("TrackingActivity", "Loading Travel Document from intent: $id")
+                    generalViewModel.getTravelDocument(id)
+                }
+
+                binding.btnStartTracker.text = "Matikan Tracker"
+                updateButtonStates()
+            }
+        }
+
+        val prefs = getSharedPreferences("tracking_prefs", MODE_PRIVATE)
+        isTracking = prefs.getBoolean("isTracking", false)
+        val savedIds = prefs.getStringSet("travelDocumentIds", emptySet())?.toList() ?: emptyList()
+        Log.d("TrackingActivity", "SharedPrefs isTracking: $isTracking, travelDocumentIds: $savedIds")
+
+        if (isTracking && savedIds.isNotEmpty()) {
+            hasTracking = true
+            binding.btnStartTracker.text = "Matikan Tracker"
+
+            savedIds.forEach { id ->
+                generalViewModel.getTravelDocument(id)
+            }
+
+            updateButtonStates()
+        }
+
+        generalViewModel.travelDocumentInfoList.observe(this) { travelDocumentInfoList ->
+            binding.chipGroupSuratJalan.removeAllViews()
+            binding.chipGroupAlamatPengiriman.removeAllViews()
+
+            travelDocumentInfoList?.forEach { info ->
+                val suratJalanChip = createChip(info.noTravelDocument ?: "") { chip ->
+                    if (!hasTracking) {
+                        generalViewModel.removeTravelDocument(info.noTravelDocument ?: "")
+                        updateButtonStates()
+                    } else {
+                        Toast.makeText(this, "Penghapusan tidak diizinkan setelah tracking dimulai", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                val alamatChip = createChip(info.sendTo ?: "") { chip ->
+                    if (!hasTracking) {
+                        generalViewModel.removeTravelDocument(info.noTravelDocument ?: "")
+                        updateButtonStates()
+                    } else {
+                        Toast.makeText(this, "Penghapusan tidak diizinkan setelah tracking dimulai", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                binding.chipGroupSuratJalan.addView(suratJalanChip)
+                binding.chipGroupAlamatPengiriman.addView(alamatChip)
+            }
+
+            updateButtonStates()
+        }
+
+
         generalViewModel.isDocumentAlreadySent.observe(this) { isSent ->
             if (isSent == true) {
                 AlertDialog.Builder(this)
@@ -101,9 +166,57 @@ class TrackingActivity: AppCompatActivity() {
         binding.btnStartTracker.isEnabled = hasDocument
 
         //uji logic
+//        binding.btnStartTracker.setOnClickListener {
+//            if (!hasTracking) {
+//                // Tampilkan alert hanya saat pertama kali tracking dimulai
+//                AlertDialog.Builder(this)
+//                    .setTitle("Konfirmasi")
+//                    .setMessage("Apakah data surat jalan sudah benar semua?\n\nSetelah pelacakan dimulai, Anda tidak dapat menambah atau menghapus surat jalan.")
+//                    .setPositiveButton("Lanjutkan") { _, _ ->
+//                        hasTracking = true
+//                        isTracking = true
+//                        binding.btnStartTracker.text = "Matikan Tracker"
+//                        startLocationUpdates()
+//                        updateButtonStates()
+//                    }
+//                    .setNegativeButton("Batal") { _, _ ->
+//                    }
+//                    .show()
+//            } else {
+//                isTracking = !isTracking
+//
+//                if (isTracking) {
+//                    binding.btnStartTracker.text = "Matikan Tracker"
+//                    startLocationUpdates()
+//                } else {
+//                    binding.btnStartTracker.text = "Hidupkan Tracker"
+//                    updateStatus()
+//                }
+//
+//                updateButtonStates()
+//            }
+//        }
+
+        if (isTracking && savedIds.isNotEmpty()) {
+            hasTracking = true
+            binding.btnStartTracker.text = "Matikan Tracker"
+
+            // Clear dulu list yang ada supaya tidak duplikat
+//            generalViewModel.clearTravelDocumentList()
+
+            savedIds.forEach { id ->
+                generalViewModel.getTravelDocument(id)
+            }
+
+            updateButtonStates()
+        }
+
+            //uji foreground
         binding.btnStartTracker.setOnClickListener {
+            val travelDocumentIds = generalViewModel.travelDocumentInfoList.value
+                ?.mapNotNull { it.id?.toString() } ?: emptyList()
+
             if (!hasTracking) {
-                // Tampilkan alert hanya saat pertama kali tracking dimulai
                 AlertDialog.Builder(this)
                     .setTitle("Konfirmasi")
                     .setMessage("Apakah data surat jalan sudah benar semua?\n\nSetelah pelacakan dimulai, Anda tidak dapat menambah atau menghapus surat jalan.")
@@ -111,37 +224,27 @@ class TrackingActivity: AppCompatActivity() {
                         hasTracking = true
                         isTracking = true
                         binding.btnStartTracker.text = "Matikan Tracker"
-                        startLocationUpdates()
+                        startTrackingService(isTracking, travelDocumentIds)
+                        saveTrackingState(isTracking, travelDocumentIds)
                         updateButtonStates()
                     }
-                    .setNegativeButton("Batal") { _, _ ->
-                    }
+                    .setNegativeButton("Batal") { _, _ -> }
                     .show()
             } else {
                 isTracking = !isTracking
-
                 if (isTracking) {
                     binding.btnStartTracker.text = "Matikan Tracker"
-                    startLocationUpdates()
+                    startTrackingService(isTracking, travelDocumentIds)
+                    saveTrackingState(isTracking, travelDocumentIds)
                 } else {
                     binding.btnStartTracker.text = "Hidupkan Tracker"
+                    stopTrackingService()
                     updateStatus()
                 }
-
                 updateButtonStates()
             }
         }
 
-            //uji foreground
-//            isTracking = !isTracking
-//            if (isTracking) {
-//                binding.btnStartTracker.text = "Matikan Tracker"
-//                binding.btnAddSuratJalan.isEnabled = false
-//                startTrackingService()
-//            } else {
-//                binding.btnStartTracker.text = "Hidupkan Tracker"
-//                stopTrackingService()
-//            }
 
         binding.btnStopTracker.isEnabled = hasDocument
         binding.btnStopTracker.setOnClickListener {
@@ -213,9 +316,21 @@ class TrackingActivity: AppCompatActivity() {
 
 
     //uji foreground activity cuy
-    private fun startTrackingService() {
-        val serviceIntent = Intent(this, TrackingService::class.java)
-        startService(serviceIntent)
+    private fun startTrackingService(isTracking: Boolean, travelDocumentIds: List<String>) {
+        val serviceIntent = Intent(this, TrackingService::class.java).apply {
+            putExtra("isTracking", isTracking)
+            putStringArrayListExtra("travelDocumentIds", ArrayList(travelDocumentIds))
+        }
+        ContextCompat.startForegroundService(this, serviceIntent)
+    }
+
+    private fun saveTrackingState(isTracking: Boolean, travelDocumentIds: List<String>) {
+        val prefs = getSharedPreferences("tracking_prefs", MODE_PRIVATE)
+        prefs.edit().apply {
+            putBoolean("isTracking", isTracking)
+            putStringSet("travelDocumentIds", travelDocumentIds.toSet())
+            apply()
+        }
     }
 
     private fun stopTrackingService() {
@@ -223,15 +338,15 @@ class TrackingActivity: AppCompatActivity() {
         stopService(serviceIntent)
     }
 
-    private fun startLocationUpdates() {
-        trackingJob = CoroutineScope(Dispatchers.Main).launch {
-            while (isActive && isTracking) {
-                getLocation()
-//                delay(5 * 60 * 1000) // 5 menit
-                delay(5 * 1000) // 5 menit
-            }
-        }
-    }
+//    private fun startLocationUpdates() {
+//        trackingJob = CoroutineScope(Dispatchers.Main).launch {
+//            while (isActive && isTracking) {
+//                getLocation()
+////                delay(5 * 60 * 1000) // 5 menit
+//                delay(5 * 1000) // 5 menit
+//            }
+//        }
+//    }
 
     private fun stopLocationUpdates() {
         trackingJob?.cancel()

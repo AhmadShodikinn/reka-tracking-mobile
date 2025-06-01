@@ -23,6 +23,7 @@ class MenusActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMenusBinding
     private lateinit var cameraPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var generalViewModel: GeneralViewModel
 
     companion object {
@@ -56,6 +57,14 @@ class MenusActivity : AppCompatActivity() {
                 Toast.makeText(this, "Kamera tidak diizinkan", Toast.LENGTH_LONG).show()
             }
             locationPermission()
+        }
+
+        notificationPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (!isGranted) {
+                Toast.makeText(this, "Notifikasi tidak diizinkan", Toast.LENGTH_SHORT).show()
+            }
         }
 
         locationPermissionLauncher = registerForActivityResult(
