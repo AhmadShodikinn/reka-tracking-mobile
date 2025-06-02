@@ -106,39 +106,41 @@ class GeneralViewModel(
         }
     }
 
-
-
     fun removeTravelDocument(noTravelDocument: String) {
         val currentList = _travelDocumentInfoList.value?.toMutableList() ?: return
         val updatedList = currentList.filterNot { it.noTravelDocument == noTravelDocument }
         _travelDocumentInfoList.value = updatedList
     }
 
-    fun sendCurrentLocation(
-        travelDocumentIds: List<Int>,
-        latitude: Double,
-        longitude: Double
-    ) {
-        viewModelScope.launch {
-            try {
-                val response = repository.sendCurrentLocation(
-                    travelDocumentIds, latitude, longitude
-                )
-
-                if (response.isSuccessful) {
-                    response.body().let { sendLocationResponse ->
-                        _sendLocationResult.value = sendLocationResponse?.data
-                    }
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    val message = JSONObject(errorBody).getString("message")
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
-            }
-        }
+    fun clearTravelDocuments() {
+        _travelDocumentInfoList.postValue(mutableListOf())
     }
+
+//    fun sendCurrentLocation(
+//        travelDocumentIds: List<Int>,
+//        latitude: Double,
+//        longitude: Double
+//    ) {
+//        viewModelScope.launch {
+//            try {
+//                val response = repository.sendCurrentLocation(
+//                    travelDocumentIds, latitude, longitude
+//                )
+//
+//                if (response.isSuccessful) {
+//                    response.body().let { sendLocationResponse ->
+//                        _sendLocationResult.value = sendLocationResponse?.data
+//                    }
+//                } else {
+//                    val errorBody = response.errorBody()?.string()
+//                    val message = JSONObject(errorBody).getString("message")
+//                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+//                }
+//            } catch (e: Exception) {
+//                Toast.makeText(context, "Server Error!", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
 
     fun updateStateTracking(
         travelDocumentIds: List<Int>,

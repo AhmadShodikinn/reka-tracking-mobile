@@ -83,7 +83,6 @@ class CameraActivity : AppCompatActivity() {
         Log.d(TAG, "onResume dipanggil")
         hideSystemUI()
         startCamera()
-//        navigateToTracker("2")
     }
 
     private fun startCamera() {

@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.project.rekatrack.R
 import com.project.rekatrack.data.request.SendLocationRequest
 import com.project.rekatrack.network.ApiConfig
@@ -46,11 +47,11 @@ class TrackingService : Service() {
         isTracking = intent?.getBooleanExtra("isTracking", true) ?: true
         documentIds = intent?.getStringArrayListExtra("travelDocumentIds") ?: emptyList()
 
-        createNotificationChannel() // pastikan dulu channel dibuat
-        val notification = buildNotification() // buat notifikasi
-        startForeground(1, notification) // MULAI foreground SEGERA
+        createNotificationChannel()
+        val notification = buildNotification()
+        startForeground(1, notification)
 
-        startLocationUpdates() // lalu proses lainnya
+        startLocationUpdates()
         return START_STICKY
     }
 
@@ -75,35 +76,11 @@ class TrackingService : Service() {
             .build()
     }
 
-    private fun showNotifications() {
-        val notificationIntent = Intent(this, TrackingActivity::class.java).apply {
-            putExtra("isTracking", isTracking)
-            putStringArrayListExtra("travelDocumentIds", ArrayList(documentIds))
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Tracking Aktif")
-            .setContentText("Lokasi sedang dikirim secara berkala")
-            .setSmallIcon(R.drawable.ic_logo_foreground)
-            .setContentIntent(pendingIntent)
-            .build()
-
-        createNotificationChannel()
-        startForeground(1, notification)
-    }
-
     private fun startLocationUpdates() {
         trackingJob = CoroutineScope(Dispatchers.IO).launch {
             while (isActive && isTracking) {
                 getLocation()
-                delay(5000) // 5 detik
+                delay(5000)
             }
         }
     }
@@ -113,13 +90,15 @@ class TrackingService : Service() {
             return
         }
 
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+        fusedLocationClient
+            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
             location?.let {
                 val latitude = it.latitude
                 val longitude = it.longitude
 
                 Log.d("TrackingService", "Lokasi: ${it.latitude}, ${it.longitude}")
-//                sendLocationToServer(documentIds, latitude, longitude)
+                sendLocationToServer(documentIds, latitude, longitude)
             }
         }
     }
@@ -142,6 +121,13 @@ class TrackingService : Service() {
                     sendLocationRequest = requestBody
                 )
                 if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    val status = responseBody?.data?.firstOrNull()?.status
+                    if (!status.isNullOrEmpty()) {
+                        val intent = Intent("com.project.rekatrack.STATUS_UPDATE")
+                        intent.putExtra("status", status)
+                        sendBroadcast(intent)
+                    }
                     Log.d("TrackingService", "Berhasil kirim lokasi: ${response.body()}")
                 } else {
                     Log.e("TrackingService", "Gagal kirim lokasi: ${response.code()}")
