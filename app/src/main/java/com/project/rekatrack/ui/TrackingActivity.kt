@@ -253,7 +253,8 @@ class TrackingActivity: AppCompatActivity() {
             return
         }
 
-        fusedLocationClient.lastLocation
+        fusedLocationClient
+            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .addOnSuccessListener(this) { location ->
                 if (location != null) {
                     val latitude = location.latitude

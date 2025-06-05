@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 class ApiConfig {
     companion object{
 
-        private const val BASE_URL = "http://192.168.18.5:8001/api/"
+        private const val BASE_URL = "http://192.168.11.9:8000/api/"
 
 //        fun getApiService(token: String): ApiService {
 //            val logging = HttpLoggingInterceptor().apply {

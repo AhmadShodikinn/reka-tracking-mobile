@@ -35,9 +35,10 @@ class CameraActivity : AppCompatActivity() {
     private var isFlashOn: Boolean = false
     private var firstCall = true
     private var scanFailedToastShown = false
+    private var invalidQrToastShown = false
     private var scanFailHandler = android.os.Handler()
     private var scanFailRunnable: Runnable? = null
-    private val SCAN_FAIL_DELAY = 60_000L // 1 menit dalam milidetik
+    private val SCAN_FAIL_DELAY = 60_000L
 
     companion object {
         private const val TAG = "CameraActivity"
@@ -145,7 +146,6 @@ class CameraActivity : AppCompatActivity() {
                     firstCall = false
 
                     val barcodeValue = barcode?.rawValue
-                    var invalidQrToastShown = false
                     Log.d("CameraActivity", barcodeValue!!)
                     if (barcodeValue != null && barcodeValue.startsWith("SJNID:")) {
                         MaterialAlertDialogBuilder(this)
