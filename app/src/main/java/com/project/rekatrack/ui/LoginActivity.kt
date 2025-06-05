@@ -44,7 +44,7 @@ class LoginActivity: AppCompatActivity() {
             return
         }
 
-        val repository = Repository(ApiConfig.getApiService(token))
+        val repository = Repository(ApiConfig.getApiService(tokenHandler))
         val factory = LoginViewModelFactory(repository, tokenHandler, this)
         loginViewModel = ViewModelProvider(this, factory).get(LoginViewModel::class.java)
 

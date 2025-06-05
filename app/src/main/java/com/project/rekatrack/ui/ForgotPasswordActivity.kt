@@ -26,9 +26,8 @@ class ForgotPasswordActivity: AppCompatActivity() {
         setContentView(view)
 
         val tokenHandler = TokenHandler(this)
-        val token = tokenHandler.getToken() ?: ""
 
-        val repository = Repository(ApiConfig.getApiService(token))
+        val repository = Repository(ApiConfig.getApiService(tokenHandler))
         val factory = LoginViewModelFactory(repository, tokenHandler, this)
         loginViewModel = ViewModelProvider(this, factory).get(LoginViewModel::class.java)
 

@@ -41,6 +41,22 @@ class TrackingService : Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        SessionHandler.onSessionExpired = {
+            val intent = Intent("com.project.rekatrack.STATUS_UPDATE")
+            intent.putExtra("status", "non-active")
+            sendBroadcast(intent)
+
+            updateNotification(
+                title = "Sesi Berakhir",
+                content = "Akun Anda digunakan di perangkat lain. Tracking dihentikan."
+            )
+
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(10000)
+                stopSelf()
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -76,6 +92,28 @@ class TrackingService : Service() {
             .build()
     }
 
+    private fun updateNotification(title: String, content: String) {
+        val notificationIntent = Intent(this, TrackingActivity::class.java)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setSmallIcon(R.drawable.ic_logo_foreground)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(1, notification)
+    }
+
     private fun startLocationUpdates() {
         trackingJob = CoroutineScope(Dispatchers.IO).launch {
             while (isActive && isTracking) {
@@ -104,8 +142,8 @@ class TrackingService : Service() {
     }
 
     private fun sendLocationToServer(ids: List<String>, latitude: Double, longitude: Double) {
-        val token = TokenHandler(this).getToken() ?: return
-        val apiService = ApiConfig.getApiService(token)
+        val tokenHandler = TokenHandler(applicationContext)
+        val apiService = ApiConfig.getApiService(tokenHandler)
 
         val intIds = ids.mapNotNull { it.toIntOrNull() }
 
@@ -153,6 +191,8 @@ class TrackingService : Service() {
     override fun onDestroy() {
         isTracking = false
         trackingJob?.cancel()
+        SessionHandler.onSessionExpired = null
+        stopForeground(true)
         super.onDestroy()
     }
 

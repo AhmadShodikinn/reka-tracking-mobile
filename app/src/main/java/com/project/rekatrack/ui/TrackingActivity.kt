@@ -31,6 +31,7 @@ import com.project.rekatrack.data.response.TravelDocumentInfo
 import com.project.rekatrack.data.viewModel.GeneralViewModel
 import com.project.rekatrack.databinding.ActivityTrackingBinding
 import com.project.rekatrack.network.ApiConfig
+import com.project.rekatrack.support.SessionHandler
 import com.project.rekatrack.support.TokenHandler
 import com.project.rekatrack.support.TrackingService
 import com.project.rekatrack.viewModelFactory.ViewModelFactory
@@ -67,9 +68,8 @@ class TrackingActivity: AppCompatActivity() {
 //        }
 
         val tokenHandler = TokenHandler(this)
-        val token = tokenHandler.getToken() ?: ""
 
-        val repository = Repository(ApiConfig.getApiService(token))
+        val repository = Repository(ApiConfig.getApiService(tokenHandler))
         val factory = ViewModelFactory(repository, this)
         generalViewModel = ViewModelProvider(this, factory).get(GeneralViewModel::class.java)
 
@@ -81,6 +81,19 @@ class TrackingActivity: AppCompatActivity() {
                 scannedData?.let {
                     fetchSuratJalan(scannedData)
                 }
+            }
+        }
+
+        SessionHandler.onSessionExpired = {
+            generalViewModel.onSessionExpired()
+        }
+
+        generalViewModel.sessionExpired.observe(this) { isExpired ->
+            if (isExpired) {
+                Toast.makeText(this, "Session expired, silakan login kembali", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
             }
         }
 
@@ -112,7 +125,6 @@ class TrackingActivity: AppCompatActivity() {
                     binding.btnStartTracker.text = if (isTracking) "Matikan Tracker" else "Hidupkan Tracker"
 
                     intentIds.forEach { id ->
-                        Log.d("TrackingActivity", "Loading Travel Document from intent: $id")
                         generalViewModel.getTravelDocument(id)
                     }
 
@@ -266,7 +278,6 @@ class TrackingActivity: AppCompatActivity() {
                             if (it.isNotEmpty()) {
                                 val latestStatus = it.last()?.trackingStatus
                                 updateStatusTextView(latestStatus)
-                                Toast.makeText(this, "Status pengiriman: $latestStatus", Toast.LENGTH_SHORT).show()
 
                                 //clear prefs
                                 val prefs = getSharedPreferences("tracking_prefs", MODE_PRIVATE)
@@ -284,7 +295,7 @@ class TrackingActivity: AppCompatActivity() {
                         }
                     }
                 } else {
-                    Toast.makeText(this, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Lokasi tidak ditemukan, pastikan GPS menyala", Toast.LENGTH_SHORT).show()
                 }
             }
     }
@@ -314,10 +325,20 @@ class TrackingActivity: AppCompatActivity() {
     private val statusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val status = intent?.getStringExtra("status")
+
             status?.let {
-                Log.d("TrackingActivity", "Menerima status update dari Service: $it")
                 updateStatusTextView(it)
+
+                if (it == "non-active") {
+                    isTracking = false
+                    hasTracking = true
+                    binding.btnStartTracker.text = "Hidupkan Tracker"
+                    saveTrackingState(isTracking, generalViewModel.travelDocumentInfoList.value?.mapNotNull { it.id?.toString() } ?: emptyList())
+                    updateButtonStates()
+                }
             }
+
+
         }
     }
 

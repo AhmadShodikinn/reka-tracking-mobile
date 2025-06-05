@@ -16,6 +16,7 @@ import com.project.rekatrack.data.repository.Repository
 import com.project.rekatrack.data.viewModel.GeneralViewModel
 import com.project.rekatrack.databinding.ActivityMenusBinding
 import com.project.rekatrack.network.ApiConfig
+import com.project.rekatrack.support.SessionHandler
 import com.project.rekatrack.support.TokenHandler
 import com.project.rekatrack.viewModelFactory.ViewModelFactory
 
@@ -34,9 +35,8 @@ class MenusActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val tokenHandler = TokenHandler(this)
-        val token = tokenHandler.getToken() ?: ""
 
-        val repository = Repository(ApiConfig.getApiService(token))
+        val repository = Repository(ApiConfig.getApiService(tokenHandler))
         val factory = ViewModelFactory(repository, this)
         generalViewModel = ViewModelProvider(this, factory).get(GeneralViewModel::class.java)
 
@@ -52,7 +52,6 @@ class MenusActivity : AppCompatActivity() {
             Log.d(TAG, "Permission result: $isGranted")
             if (isGranted) {
                 Toast.makeText(this, "Kamera diizinkan", Toast.LENGTH_LONG).show()
-//                launchCameraActivity()
             } else {
                 Toast.makeText(this, "Kamera tidak diizinkan", Toast.LENGTH_LONG).show()
             }
@@ -72,7 +71,6 @@ class MenusActivity : AppCompatActivity() {
         ) { isGranted: Boolean ->
             if (isGranted) {
                 Toast.makeText(this, "Lokasi diizinkan", Toast.LENGTH_LONG).show()
-                // Lanjutkan ke fungsi yang membutuhkan akses lokasi
             } else {
                 Toast.makeText(this, "Lokasi tidak diizinkan", Toast.LENGTH_LONG).show()
             }
@@ -82,14 +80,20 @@ class MenusActivity : AppCompatActivity() {
         binding = ActivityMenusBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Log.d(TAG, "View binding selesai")
-
         cameraPermission()
-//        locationPermission()
 
+        SessionHandler.onSessionExpired = {
+            generalViewModel.onSessionExpired()
+        }
 
-        Log.d(TAG, "Token: ${tokenHandler.getToken()}")
-
+        generalViewModel.sessionExpired.observe(this) { isExpired ->
+            if (isExpired) {
+                Toast.makeText(this, "Session expired, silakan login kembali", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+        }
 
         binding.tvUserName.text = "Halo, $userName"
         binding.tvUserRole.text = userRole
@@ -142,7 +146,6 @@ class MenusActivity : AppCompatActivity() {
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            // Kamera sudah diizinkan
             Toast.makeText(this, "Kamera diizinkan", Toast.LENGTH_SHORT).show()
             locationPermission()
         } else {
@@ -151,9 +154,4 @@ class MenusActivity : AppCompatActivity() {
         }
     }
 
-    private fun launchCameraActivity() {
-        Log.d(TAG, "Meluncurkan CameraActivity")
-        val intent = Intent(this, CameraActivity::class.java)
-        startActivity(intent)
-    }
 }

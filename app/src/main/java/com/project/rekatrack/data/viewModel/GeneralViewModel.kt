@@ -26,6 +26,9 @@ class GeneralViewModel(
     private val _searchSJNResponse = MutableLiveData<SearchSJNResponse?>()
     val searchSJNResponse: LiveData<SearchSJNResponse?> = _searchSJNResponse
 
+    private val _sessionExpired = MutableLiveData<Boolean>()
+    val sessionExpired: LiveData<Boolean> get() = _sessionExpired
+
     private val _travelDocumentInfoList = MutableLiveData<List<TravelDocumentInfo>>()
     val travelDocumentInfoList: LiveData<List<TravelDocumentInfo>> = _travelDocumentInfoList
 
@@ -43,6 +46,10 @@ class GeneralViewModel(
 
     private val _logoutSession = MutableLiveData<UserLogoutResponse>()
     val logoutResponse: LiveData<UserLogoutResponse> = _logoutSession
+
+    fun onSessionExpired() {
+        _sessionExpired.postValue(true)
+    }
 
     fun authLogout() {
         viewModelScope.launch {
